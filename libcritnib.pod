@@ -1,0 +1,46 @@
+=encoding utf8
+
+=head1 NAME
+
+libcritnib - an ordered map data structure with lock-free reads
+
+=head1 SYNOPSIS
+
+B<#include E<lt>critnib.hE<gt>>
+
+Link with I<-lcritnib>.
+
+=head1 DESCRIPTION
+
+=head2 Functions:
+
+=over
+
+=item B<critnib *critnib_new(void);>
+
+Creates a new empty critnib structure.
+
+=item B<void critnib_delete(critnib *>I<c>B<);>
+
+Destroys and frees the memory.  Note that removed items are reused but won't
+have their memory freed until this function is called.
+
+=item B<int critnib_insert(critnib *>I<c>B<, uint64_t >I<key>B<, void *>I<value>B<);>
+
+Adds a key:value pair to the critnib structure.  It's an error (B<EEXISTS>)
+if that key already exists.  May return B<ENOMEM> if we're out of memory,
+or 0 if all went okay.
+
+=item B<void *critnib_remove(critnib *>I<c>B<, uint64_t >I<key>B<);>
+
+Removes a given key and its associated value from the structure.
+
+=item B<void *critnib_get(critnib *>I<c>B<, uint64_t >I<key>B<);>
+
+Obtains a value for a given key, or 0 (NULL) if not present.
+
+=item B<void *critnib_find_le(critnib *>I<c>B<, uint64_t >I<key>B<);>
+
+Searches for the largest key not exceeding the argument, and returns its value.
+
+=back
