@@ -22,3 +22,11 @@ install(FILES critnib.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 enable_testing()
 add_subdirectory(tests)
+
+add_custom_target(man ALL
+	BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/libcritnib.3
+	COMMENT "Building libcritnib.3"
+	COMMAND pod2man -c critnib -s 3 -n libcritnib
+		<${CMAKE_CURRENT_SOURCE_DIR}/libcritnib.pod
+		>${CMAKE_CURRENT_BINARY_DIR}/libcritnib.3
+	)
