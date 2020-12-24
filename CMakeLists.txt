@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.9)
 project(critnib C)
 
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 include(FindThreads)
 
 if(NOT CMAKE_BUILD_TYPE)
