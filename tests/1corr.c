@@ -1,16 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "rand.h"
 #include "hmproto.h"
 
 #define ARRAYSZ(x) (sizeof(x)/sizeof(x[0]))
 
 static int bad=0;
 #define CHECK(x) do if (!(x)) printf("\e[31mWRONG: \e[1m%s\e[22m at line \e[1m%d\e[22m\n", #x, __LINE__),bad=1,exit(1); while (0)
-
-static uint64_t rnd64()
-{
-    return (uint64_t)(uint32_t)(mrand48())<<32 | (uint32_t)(mrand48());
-}
 
 static void test_smoke()
 {
@@ -239,6 +235,7 @@ static void run_test(void (*func)(void), const char *name, int req)
 
 int main()
 {
+    randomize(-1);
     TEST(smoke, 0);
     TEST(key0, 0);
     TEST(1to1000, 0);

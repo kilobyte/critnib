@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
-#include <sys/syscall.h>
+#include "rand.h"
 #include "hmproto.h"
 
 #define ARRAYSZ(x) (sizeof(x)/sizeof(x[0]))
@@ -19,30 +19,6 @@ static uint64_t nproc()
     if (!pthread_getaffinity_np(pthread_self(), sizeof(set), &set))
         return CPU_COUNT(&set);
     return 0;
-}
-
-static uint64_t rnd16()
-{
-    return rand()&0xffff;
-}
-
-static uint64_t rnd64()
-{
-    return rnd16()<<48 | rnd16()<<32 | rnd16()<<16 | rnd16();
-}
-
-static uint64_t rnd_r64(unsigned short xsubi[3])
-{
-    return (uint64_t)(uint32_t)(jrand48(xsubi))<<32 | (uint32_t)(jrand48(xsubi));
-}
-
-static void randomize(unsigned short *xsubi)
-{
-    if (syscall(SYS_getrandom, xsubi, sizeof(xsubi), 0) == sizeof(xsubi))
-        return;
-    xsubi[0]=pthread_self()>>32;
-    xsubi[1]=pthread_self()>>16;
-    xsubi[2]=pthread_self();
 }
 
 static int bad=0, any_bad=0;
@@ -100,11 +76,11 @@ static void* thread_read1000(void* c)
 
 static void* thread_write1000(void* c)
 {
-    unsigned short xsubi[3];
-    randomize(xsubi);
+    rng_t rng;
+    randomize_r(&rng, 0);
     uint64_t w1000[1000];
     for (int i=0; i<ARRAYSZ(w1000); i++)
-        w1000[i] = rnd_r64(xsubi);
+        w1000[i] = rnd64_r(&rng);
 
     uint64_t count=0;
     int i=0;
@@ -123,12 +99,12 @@ static void* thread_write1000(void* c)
 
 static void* thread_read_write_remove(void* c)
 {
-    unsigned short xsubi[3];
-    randomize(xsubi);
+    rng_t rng;
+    randomize_r(&rng, 0);
     uint64_t count=0;
     while (!done)
     {
-        uint64_t r, v=rnd_r64(xsubi);
+        uint64_t r, v=rnd64_r(&rng);
         hm_insert(c, v, (void*)v);
         r = (uint64_t)hm_get(c, v);
         CHECKP(r == v, "get[%016lx] got %016lx\n\n", v, r);
@@ -177,13 +153,11 @@ static void* thread_read1000_cachekiller(void* c)
 static void* thread_write1000_cachekiller(void* c)
 {
     volatile uint64_t cache[CACHESIZE][8];
-    unsigned short xsubi[3];
-    xsubi[0]=pthread_self()>>32;
-    xsubi[1]=pthread_self()>>16;
-    xsubi[2]=pthread_self();
+    rng_t rng;
+    randomize_r(&rng, 0);
     uint64_t w1000[1000];
     for (int i=0; i<ARRAYSZ(w1000); i++)
-        w1000[i] = rnd_r64(xsubi);
+        w1000[i] = rnd64_r(&rng);
 
     uint64_t count=0;
     int i=0;
@@ -342,6 +316,7 @@ int main(int argc, char **argv)
     if (optind < argc)
         return fprintf(stderr, "%s: unknown arg '%s'\n", argv[0], argv[optind]), 1;
 
+    randomize(0);
     for (int i=0; i<ARRAYSZ(the1000); i++)
         the1000[i] = rnd64();
     for (int i=0; i<ARRAYSZ(the1000p); i++)

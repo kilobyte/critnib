@@ -1,5 +1,5 @@
-add_executable(1corr 1corr.c hmload.c)
-add_executable(th th.c hmload.c)
+add_executable(1corr 1corr.c hmload.c rand.c)
+add_executable(th th.c hmload.c rand.c)
 
 add_test(1corr 1corr)
 add_test(th th)
