@@ -25,11 +25,12 @@ Creates a new empty critnib structure.
 Destroys and frees the memory.  Note that removed items are reused but won't
 have their memory freed until this function is called.
 
-=item B<int critnib_insert(critnib *>I<c>B<, uint64_t >I<key>B<, void *>I<value>B<);>
+=item B<int critnib_insert(critnib *>I<c>B<, uint64_t >I<key>B<, void *>I<value>B<, int >I<update>B<);>
 
-Adds a key:value pair to the critnib structure.  It's an error (B<EEXISTS>)
-if that key already exists.  May return B<ENOMEM> if we're out of memory,
-or 0 if all went okay.
+Adds a key:value pair to the critnib structure.  If I<update> is non-zero,
+an already existing key has its value updated, otherwise the function returns
+B<EEXISTS>.  It may return B<ENOMEM> if we're out of memory, or 0 if all went
+okay.
 
 =item B<void *critnib_remove(critnib *>I<c>B<, uint64_t >I<key>B<);>
 

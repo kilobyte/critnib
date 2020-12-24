@@ -89,7 +89,7 @@ static void* thread_write1000(void* c)
         if (++i==1000)
             i=0;
         uint64_t v=w1000[i];
-        hm_insert(c, v, (void*)v);
+        hm_insert(c, v, (void*)v, 0);
         uint64_t r=(uint64_t)hm_remove(c, v);
         CHECK(v==r);
         count++;
@@ -105,7 +105,7 @@ static void* thread_read_write_remove(void* c)
     while (!done)
     {
         uint64_t r, v=rnd64_r(&rng);
-        hm_insert(c, v, (void*)v);
+        hm_insert(c, v, (void*)v, 0);
         r = (uint64_t)hm_get(c, v);
         CHECKP(r == v, "get[%016lx] got %016lx\n\n", v, r);
         r = (uint64_t)hm_remove(c, v);
@@ -168,7 +168,7 @@ static void* thread_write1000_cachekiller(void* c)
         if (++i==1000)
             i=0;
         uint64_t v=w1000[i];
-        hm_insert(c, v, (void*)v);
+        hm_insert(c, v, (void*)v, 0);
         uint64_t r=(uint64_t)hm_remove(c, v);
         CHECK(v==r);
         count++;
@@ -226,18 +226,18 @@ static void run_test(int spreload, int rpreload, thread_func_t rthread, thread_f
 
     void *c = hm_new();
     if (spreload>=1)
-        hm_insert(c, K, (void*)K);
+        hm_insert(c, K, (void*)K, 0);
     if (spreload>=2)
-        hm_insert(c, 1, (void*)1);
+        hm_insert(c, 1, (void*)1, 0);
     if (ptrs)
     {
         rpreload=-rpreload;
         for (int i=spreload; i<rpreload; i++)
-            hm_insert(c, (uint64_t)the1000p[i], the1000p[i]);
+            hm_insert(c, (uint64_t)the1000p[i], the1000p[i], 0);
     }
     else
         for (int i=spreload; i<rpreload; i++)
-            hm_insert(c, the1000[i], (void*)the1000[i]);
+            hm_insert(c, the1000[i], (void*)the1000[i], 0);
 
     pthread_t th[nthreads], wr[nwthreads];
     int ntr=wthread?nrthreads:nthreads;

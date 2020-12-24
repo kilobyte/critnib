@@ -11,7 +11,7 @@ static int bad=0;
 static void test_smoke()
 {
     void *c = hm_new();
-    hm_insert(c, 123, (void*)456);
+    hm_insert(c, 123, (void*)456, 0);
     CHECK(hm_get(c, 123) == (void*)456);
     CHECK(hm_get(c, 124) == 0);
     hm_delete(c);
@@ -20,9 +20,9 @@ static void test_smoke()
 static void test_key0()
 {
     void *c = hm_new();
-    hm_insert(c, 1, (void*)1);
-    hm_insert(c, 0, (void*)2);
-    hm_insert(c, 65536, (void*)3);
+    hm_insert(c, 1, (void*)1, 0);
+    hm_insert(c, 0, (void*)2, 0);
+    hm_insert(c, 65536, (void*)3, 0);
     CHECK(hm_get(c, 1)    == (void*)1);
     CHECK(hm_remove(c, 1) == (void*)1);
     CHECK(hm_get(c, 0)      == (void*)2);
@@ -36,7 +36,7 @@ static void test_1to1000()
 {
     void *c = hm_new();
     for (long i=0; i<1000; i++)
-        hm_insert(c, i, (void*)i);
+        hm_insert(c, i, (void*)i, 0);
     for (long i=0; i<1000; i++)
         CHECK(hm_get(c, i) == (void*)i);
     hm_delete(c);
@@ -49,7 +49,7 @@ static void test_insert_delete1M()
     for (long i=0; i<MAX; i++)
     {
         CHECK(hm_get(c, i) == (void*)0);
-        hm_insert(c, i, (void*)i);
+        hm_insert(c, i, (void*)i, 0);
         CHECK(hm_get(c, i) == (void*)i);
         CHECK(hm_remove(c, i) == (void*)i);
         CHECK(hm_get(c, i) == (void*)0);
@@ -65,7 +65,7 @@ static void test_insert_bulk_delete1M()
     for (long i=0; i<MAX; i++)
     {
         CHECK(hm_get(c, i) == (void*)0);
-        hm_insert(c, i, (void*)i);
+        hm_insert(c, i, (void*)i, 0);
         CHECK(hm_get(c, i) == (void*)i);
     }
     for (long i=0; i<MAX; i++)
@@ -93,7 +93,7 @@ static void test_ffffffff_and_friends()
 
     void *c = hm_new();
     for (int i=0; i<ARRAYSZ(vals); i++)
-        hm_insert(c, vals[i], (void*)~vals[i]);
+        hm_insert(c, vals[i], (void*)~vals[i], 0);
     for (int i=0; i<ARRAYSZ(vals); i++)
         CHECK(hm_get(c, vals[i]) == (void*)~vals[i]);
     for (int i=0; i<ARRAYSZ(vals); i++)
@@ -107,7 +107,7 @@ static void test_insert_delete_random()
     for (long i=0; i<1000000; i++)
     {
         uint64_t v=rnd64();
-        hm_insert(c, v, (void*)v);
+        hm_insert(c, v, (void*)v, 0);
         CHECK(hm_get(c, v) == (void*)v);
         CHECK(hm_remove(c, v) == (void*)v);
         CHECK(hm_get(c, v) == 0);
@@ -118,7 +118,7 @@ static void test_insert_delete_random()
 static void test_le_basic()
 {
     void *c = hm_new();
-#define INS(x) hm_insert(c, (x), (void*)(x))
+#define INS(x) hm_insert(c, (x), (void*)(x), 0)
     INS(1);
     INS(2);
     INS(3);
@@ -173,7 +173,7 @@ static void test_le_brute()
         if (ws[w])
             hm_remove(c, expand_bits(w)), ws[w]=0;
         else
-            hm_insert(c, expand_bits(w), (void*)expand_bits(w)), ws[w]=1;
+            hm_insert(c, expand_bits(w), (void*)expand_bits(w), 0), ws[w]=1;
 
         for (int cnt2=0; cnt2<1024; cnt2++)
         {
@@ -194,8 +194,8 @@ static void test_le_brute()
 static void test_same_only()
 {
     void *c = hm_new();
-    hm_insert(c, 123, (void*)456);
-    hm_insert(c, 123, (void*)457);
+    hm_insert(c, 123, (void*)456, 0);
+    hm_insert(c, 123, (void*)457, 0);
     CHECK(hm_get(c, 123) == (void*)456);
     CHECK(hm_get(c, 124) == 0);
     hm_delete(c);
@@ -204,9 +204,9 @@ static void test_same_only()
 static void test_same_two()
 {
     void *c = hm_new();
-    hm_insert(c, 122, (void*)111);
-    hm_insert(c, 123, (void*)456);
-    hm_insert(c, 123, (void*)457);
+    hm_insert(c, 122, (void*)111, 0);
+    hm_insert(c, 123, (void*)456, 0);
+    hm_insert(c, 123, (void*)457, 0);
     CHECK(hm_get(c, 122) == (void*)111);
     CHECK(hm_get(c, 123) == (void*)456);
     CHECK(hm_get(c, 124) == 0);

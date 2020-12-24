@@ -4,7 +4,7 @@
     void *x##_new(void);\
     void x##_delete(void *c);\
     \
-    int x##_insert(void *c, uint64_t key, void *value);\
+    int x##_insert(void *c, uint64_t key, void *value, int update);\
     void *x##_remove(void *c, uint64_t key);\
     void *x##_get(void *c, uint64_t key);\
     void *x##_find_le(void *c, uint64_t key);
@@ -16,7 +16,7 @@ HM_PROTOS(critnib)
 
 void *(*hm_new)(void);
 void (*hm_delete)(void *c);
-int (*hm_insert)(void *c, uint64_t key, void *value);
+int (*hm_insert)(void *c, uint64_t key, void *value, int update);
 void *(*hm_remove)(void *c, uint64_t key);
 void *(*hm_get)(void *c, uint64_t key);
 void *(*hm_find_le)(void *c, uint64_t key);
@@ -39,7 +39,7 @@ struct hm
 {
     void *(*hm_new)(void);
     void (*hm_delete)(void *c);
-    int (*hm_insert)(void *c, uint64_t key, void *value);
+    int (*hm_insert)(void *c, uint64_t key, void *value, int update);
     void *(*hm_remove)(void *c, uint64_t key);
     void *(*hm_get)(void *c, uint64_t key);
     void *(*hm_find_le)(void *c, uint64_t key);

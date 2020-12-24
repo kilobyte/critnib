@@ -339,7 +339,7 @@ alloc_leaf(struct critnib *__restrict c)
  * Takes a global write lock but doesn't stall any readers.
  */
 int
-critnib_insert(struct critnib *c, uint64_t key, void *value)
+critnib_insert(struct critnib *c, uint64_t key, void *value, int update)
 {
 	util_mutex_lock(&c->mutex);
 
@@ -390,11 +390,15 @@ critnib_insert(struct critnib *c, uint64_t key, void *value)
 	if (!at) {
 		ASSERT(is_leaf(n));
 		free_leaf(c, to_leaf(kn));
-		/* fail instead of replacing */
 
-		util_mutex_unlock(&c->mutex);
-
-		return EEXIST;
+		if (update) {
+			to_leaf(n)->value = value;
+			util_mutex_unlock(&c->mutex);
+			return 0;
+		} else {
+			util_mutex_unlock(&c->mutex);
+			return EEXIST;
+		}
 	}
 
 	/* and convert that to an index. */

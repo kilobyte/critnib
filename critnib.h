@@ -16,7 +16,7 @@ typedef struct critnib critnib;
 struct critnib *critnib_new(void);
 void critnib_delete(struct critnib *c);
 
-int critnib_insert(struct critnib *c, uint64_t key, void *value);
+int critnib_insert(struct critnib *c, uint64_t key, void *value, int update);
 void *critnib_remove(struct critnib *c, uint64_t key);
 void *critnib_get(struct critnib *c, uint64_t key);
 void *critnib_find_le(struct critnib *c, uint64_t key);
