@@ -15,10 +15,15 @@ set(libs critnib ${CMAKE_THREAD_LIBS_INIT})
 add_executable(m main.c)
 target_link_libraries(m ${libs})
 
+set_target_properties(critnib PROPERTIES
+	SOVERSION 0
+	PUBLIC_HEADER "critnib.h")
+
 include(GNUInstallDirs)
 install(TARGETS critnib
+	PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	DESTINATION ${CMAKE_INSTALL_LIBDIR}/)
+	RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}/)
 install(FILES critnib.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 enable_testing()
