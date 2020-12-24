@@ -1,0 +1,8 @@
+libcritnib.so.0 libcritnib0 #MINVER#
+* Build-Depends-Package: libcritnib-dev
+ critnib_delete@Base 0
+ critnib_find_le@Base 0
+ critnib_get@Base 0
+ critnib_insert@Base 0
+ critnib_new@Base 0
+ critnib_remove@Base 0
