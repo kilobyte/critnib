@@ -80,15 +80,17 @@ static void test_insert_bulk_delete1M()
 
 static void test_ffffffff_and_friends()
 {
-    static uint64_t vals[]=
+    static uintptr_t vals[]=
     {
         0,
         0x7fffffff,
         0x80000000,
         0xffffffff,
+#if __SIZEOF_SIZE_T__ == 8
         0x7fffffffFFFFFFFF,
         0x8000000000000000,
         0xFfffffffFFFFFFFF,
+#endif
     };
 
     void *c = hm_new();
@@ -106,7 +108,7 @@ static void test_insert_delete_random()
     void *c = hm_new();
     for (long i=0; i<1000000; i++)
     {
-        uint64_t v=rnd64();
+        uintptr_t v=rnd64();
         hm_insert(c, v, (void*)v, 0);
         CHECK(hm_get(c, v) == (void*)v);
         CHECK(hm_remove(c, v) == (void*)v);
@@ -150,7 +152,7 @@ static void test_le_basic()
     hm_delete(c);
 }
 
-static uint64_t expand_bits(uint64_t x)
+static uintptr_t expand_bits(uintptr_t x)
 {
     return (x&0xc000)<<14
          | (x&0x3000)<<12
@@ -181,8 +183,8 @@ static void test_le_brute()
             int v;
             for (v=w; v>=0 && !ws[v]; v--)
                 ;
-            uint64_t res = (uint64_t)hm_find_le(c, expand_bits(w));
-            uint64_t exp = (v>=0)?expand_bits(v):0;
+            uintptr_t res = (uintptr_t)hm_find_le(c, expand_bits(w));
+            uintptr_t exp = (v>=0)?expand_bits(v):0;
             CHECK(res == exp);
         }
     }

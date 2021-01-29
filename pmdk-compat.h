@@ -37,6 +37,8 @@ static void *Zalloc(size_t s)
 #define util_fetch_and_or64	__sync_fetch_and_or
 #define util_lssb_index64(x)	((unsigned char)__builtin_ctzll(x))
 #define util_mssb_index64(x)	((unsigned char)(63 - __builtin_clzll(x)))
+#define util_lssb_index32(x)	((unsigned char)__builtin_ctzl(x))
+#define util_mssb_index32(x)	((unsigned char)(31 - __builtin_clzl(x)))
 
 
 #define NOFUNCTION do ; while(0)

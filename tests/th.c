@@ -11,9 +11,9 @@
 // These functions return a 64-bit value on 64-bit systems; I'd be
 // interested in testing stuff on a box where you have more cores
 // than fits in an uint32_t...
-static uint64_t nthreads, nrthreads, nwthreads;
+static uintptr_t nthreads, nrthreads, nwthreads;
 
-static uint64_t nproc()
+static uintptr_t nproc()
 {
     cpu_set_t set;
     if (!pthread_getaffinity_np(pthread_self(), sizeof(set), &set))
@@ -26,10 +26,14 @@ static int bad=0, any_bad=0;
 #define CHECKP(x,...) do if (!(x)) {bad=1; printf("ERROR: "__VA_ARGS__);} while (0)
 static int done=0;
 
-static uint64_t the1000[1000];
+static uintptr_t the1000[1000];
 static void* the1000p[1000];
 
-#define K 0xdeadbeefcafebabe
+#if __SIZEOF_SIZE_T__ == 8
+# define K 0xdeadbeefcafebabe
+#else
+# define K 0xcafebabe
+#endif
 
 /***********/
 /* threads */
@@ -37,7 +41,7 @@ static void* the1000p[1000];
 
 static void* thread_read1(void* c)
 {
-    uint64_t count=0;
+    uintptr_t count=0;
     while (!done)
     {
         CHECK(hm_get(c, K) == (void*)K);
@@ -50,10 +54,10 @@ static void* thread_read1p(void* c)
 {
     void* k = the1000p[0];
 
-    uint64_t count=0;
+    uintptr_t count=0;
     while (!done)
     {
-        CHECK(hm_get(c, (uint64_t)k) == k);
+        CHECK(hm_get(c, (uintptr_t)k) == k);
         count++;
     }
     return (void*)count;
@@ -61,13 +65,13 @@ static void* thread_read1p(void* c)
 
 static void* thread_read1000(void* c)
 {
-    uint64_t count=0;
+    uintptr_t count=0;
     int i=0;
     while (!done)
     {
         if (++i==1000)
             i=0;
-        uint64_t v=the1000[i];
+        uintptr_t v=the1000[i];
         CHECK(hm_get(c, v) == (void*)v);
         count++;
     }
@@ -78,19 +82,19 @@ static void* thread_write1000(void* c)
 {
     rng_t rng;
     randomize_r(&rng, 0);
-    uint64_t w1000[1000];
+    uintptr_t w1000[1000];
     for (int i=0; i<ARRAYSZ(w1000); i++)
         w1000[i] = rnd64_r(&rng);
 
-    uint64_t count=0;
+    uintptr_t count=0;
     int i=0;
     while (!done)
     {
         if (++i==1000)
             i=0;
-        uint64_t v=w1000[i];
+        uintptr_t v=w1000[i];
         hm_insert(c, v, (void*)v, 0);
-        uint64_t r=(uint64_t)hm_remove(c, v);
+        uintptr_t r=(uintptr_t)hm_remove(c, v);
         CHECK(v==r);
         count++;
     }
@@ -101,15 +105,15 @@ static void* thread_read_write_remove(void* c)
 {
     rng_t rng;
     randomize_r(&rng, 0);
-    uint64_t count=0;
+    uintptr_t count=0;
     while (!done)
     {
-        uint64_t r, v=rnd64_r(&rng);
+        uintptr_t r, v=rnd64_r(&rng);
         hm_insert(c, v, (void*)v, 0);
-        r = (uint64_t)hm_get(c, v);
-        CHECKP(r == v, "get[%016lx] got %016lx\n\n", v, r);
-        r = (uint64_t)hm_remove(c, v);
-        CHECKP(r == v, "remove[%016lx] got %016lx\n\n", v, r);
+        r = (uintptr_t)hm_get(c, v);
+        CHECKP(r == v, "get[%016zx] got %016zx\n\n", v, r);
+        r = (uintptr_t)hm_remove(c, v);
+        CHECKP(r == v, "remove[%016zx] got %016zx\n\n", v, r);
         count++;
     }
     return (void*)count;
@@ -119,9 +123,9 @@ static void* thread_read_write_remove(void* c)
 
 static void* thread_read1_cachekiller(void* c)
 {
-    volatile uint64_t cache[CACHESIZE][8];
+    volatile uintptr_t cache[CACHESIZE][8];
 
-    uint64_t count=0;
+    uintptr_t count=0;
     while (!done)
     {
         for (int i=0; i<CACHESIZE; i++)
@@ -134,8 +138,8 @@ static void* thread_read1_cachekiller(void* c)
 
 static void* thread_read1000_cachekiller(void* c)
 {
-    volatile uint64_t cache[CACHESIZE][8];
-    uint64_t count=0;
+    volatile uintptr_t cache[CACHESIZE][8];
+    uintptr_t count=0;
     int i=0;
     while (!done)
     {
@@ -143,7 +147,7 @@ static void* thread_read1000_cachekiller(void* c)
             cache[k][0]++;
         if (++i==1000)
             i=0;
-        uint64_t v=the1000[i];
+        uintptr_t v=the1000[i];
         CHECK(hm_get(c, v) == (void*)v);
         count++;
     }
@@ -152,14 +156,14 @@ static void* thread_read1000_cachekiller(void* c)
 
 static void* thread_write1000_cachekiller(void* c)
 {
-    volatile uint64_t cache[CACHESIZE][8];
+    volatile uintptr_t cache[CACHESIZE][8];
     rng_t rng;
     randomize_r(&rng, 0);
-    uint64_t w1000[1000];
+    uintptr_t w1000[1000];
     for (int i=0; i<ARRAYSZ(w1000); i++)
         w1000[i] = rnd64_r(&rng);
 
-    uint64_t count=0;
+    uintptr_t count=0;
     int i=0;
     while (!done)
     {
@@ -167,18 +171,18 @@ static void* thread_write1000_cachekiller(void* c)
             cache[k][0]++;
         if (++i==1000)
             i=0;
-        uint64_t v=w1000[i];
+        uintptr_t v=w1000[i];
         hm_insert(c, v, (void*)v, 0);
-        uint64_t r=(uint64_t)hm_remove(c, v);
+        uintptr_t r=(uintptr_t)hm_remove(c, v);
         CHECK(v==r);
         count++;
     }
     return (void*)count;
 }
 
-static uint64_t revbits(uint64_t x)
+static uintptr_t revbits(uintptr_t x)
 {
-    uint64_t y=0, a=1, b=0x8000000000000000;
+    uintptr_t y=0, a=1, b=1UL<<(sizeof(void*)*8-1);
     for (; b; a<<=1, b>>=1)
     {
         if (x & a)
@@ -189,10 +193,10 @@ static uint64_t revbits(uint64_t x)
 
 static void* thread_le1(void* c)
 {
-    uint64_t count=0;
+    uintptr_t count=0;
     while (!done)
     {
-        uint64_t y = revbits(count);
+        uintptr_t y = revbits(count);
         if (y < K)
             CHECK(hm_find_le(c, y) == NULL);
         else
@@ -204,10 +208,10 @@ static void* thread_le1(void* c)
 
 static void* thread_le1000(void* c)
 {
-    uint64_t count=0;
+    uintptr_t count=0;
     while (!done)
     {
-        uint64_t y = revbits(count);
+        uintptr_t y = revbits(count);
         hm_find_le(c, y);
         count++;
     }
@@ -233,7 +237,7 @@ static void run_test(int spreload, int rpreload, thread_func_t rthread, thread_f
     {
         rpreload=-rpreload;
         for (int i=spreload; i<rpreload; i++)
-            hm_insert(c, (uint64_t)the1000p[i], the1000p[i], 0);
+            hm_insert(c, (uintptr_t)the1000p[i], the1000p[i], 0);
     }
     else
         for (int i=spreload; i<rpreload; i++)
@@ -250,7 +254,7 @@ static void run_test(int spreload, int rpreload, thread_func_t rthread, thread_f
     sleep(1);
     done=1;
 
-    uint64_t countr=0, countw=0;
+    uintptr_t countr=0, countw=0;
     for (int i=0; i<ntr; i++)
     {
         void* retval;
@@ -265,9 +269,9 @@ static void run_test(int spreload, int rpreload, thread_func_t rthread, thread_f
     }
 
     if (ntw)
-        printf("\e[F\e[25C%15lu %15lu\n", countr, countw);
+        printf("\e[F\e[25C%15zu %15zu\n", countr, countw);
     else
-        printf("\e[F\e[25C%15lu\n", countr);
+        printf("\e[F\e[25C%15zu\n", countr);
     hm_delete(c);
 }
 
@@ -331,7 +335,7 @@ int main(int argc, char **argv)
     nrthreads=nthreads-nwthreads;
     if (!nrthreads)
         nrthreads = 1;
-    printf("Using %lu threads; %lu readers %lu writers in mixed tests.\n",
+    printf("Using %zu threads; %zu readers %zu writers in mixed tests.\n",
         nthreads, nrthreads, nwthreads);
     test("read 1-of-1", 1, 0, thread_read1, 0, 0);
     test("read 1-of-2", 2, 0, thread_read1, 0, 0);
