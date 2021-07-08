@@ -81,6 +81,7 @@
 #define NIB ((1UL << SLICE) - 1)
 #define SLNODES (1 << SLICE)
 
+typedef uintptr_t word;
 typedef unsigned char sh_t;
 
 struct critnib_node {
@@ -100,12 +101,12 @@ struct critnib_node {
 	 *               shift
 	 */
 	struct critnib_node *child[SLNODES];
-	uintptr_t path;
+	word path;
 	sh_t shift;
 };
 
 struct critnib_leaf {
-	uintptr_t key;
+	word key;
 	void *value;
 };
 
@@ -131,7 +132,7 @@ struct critnib {
 static void
 load(void *src, void *dst)
 {
-	__atomic_load((uintptr_t *)src, (uintptr_t *)dst,
+	__atomic_load((word *)src, (word *)dst,
 		memory_order_acquire);
 }
 
@@ -148,7 +149,7 @@ load64(void *src, void *dst)
 static void
 store(void *dst, void *src)
 {
-	__atomic_store_n((uintptr_t *)dst, (uintptr_t)src,
+	__atomic_store_n((word *)dst, (word)src,
 		memory_order_release);
 }
 
@@ -158,7 +159,7 @@ store(void *dst, void *src)
 static inline bool
 is_leaf(struct critnib_node *n)
 {
-	return (uintptr_t)n & 1;
+	return (word)n & 1;
 }
 
 /*
@@ -167,14 +168,14 @@ is_leaf(struct critnib_node *n)
 static inline struct critnib_leaf *
 to_leaf(struct critnib_node *n)
 {
-	return (void *)((uintptr_t)n & ~1UL);
+	return (void *)((word)n & ~1UL);
 }
 
 /*
  * internal: path_mask -- return bit mask of a path above a subtree [shift]
  * bits tall
  */
-static inline uintptr_t
+static inline word
 path_mask(sh_t shift)
 {
 	return ~NIB << shift;
@@ -184,7 +185,7 @@ path_mask(sh_t shift)
  * internal: slice_index -- return index of child at the given nib
  */
 static inline unsigned
-slice_index(uintptr_t key, sh_t shift)
+slice_index(word key, sh_t shift)
 {
 	return (unsigned)((key >> shift) & NIB);
 }
@@ -346,7 +347,7 @@ alloc_leaf(struct critnib *__restrict c)
  * Takes a global write lock but doesn't stall any readers.
  */
 int
-critnib_insert(struct critnib *c, uintptr_t key, void *value, int update)
+critnib_insert(struct critnib *c, word key, void *value, int update)
 {
 	util_mutex_lock(&c->mutex);
 
@@ -362,7 +363,7 @@ critnib_insert(struct critnib *c, uintptr_t key, void *value, int update)
 	k->key = key;
 	k->value = value;
 
-	struct critnib_node *kn = (void *)((uintptr_t)k | 1);
+	struct critnib_node *kn = (void *)((word)k | 1);
 
 	struct critnib_node *n = c->root;
 	if (!n) {
@@ -391,9 +392,9 @@ critnib_insert(struct critnib *c, uintptr_t key, void *value, int update)
 		return 0;
 	}
 
-	uintptr_t path = is_leaf(n) ? to_leaf(n)->key : n->path;
+	word path = is_leaf(n) ? to_leaf(n)->key : n->path;
 	/* Find where the path differs from our key. */
-	uintptr_t at = path ^ key;
+	word at = path ^ key;
 	if (!at) {
 		ASSERT(is_leaf(n));
 		free_leaf(c, to_leaf(kn));
@@ -443,7 +444,7 @@ critnib_insert(struct critnib *c, uintptr_t key, void *value, int update)
  * critnib_remove -- delete a key from the critnib structure, return its value
  */
 void *
-critnib_remove(struct critnib *c, uintptr_t key)
+critnib_remove(struct critnib *c, word key)
 {
 	struct critnib_leaf *k;
 	void *value = NULL;
@@ -454,7 +455,7 @@ critnib_remove(struct critnib *c, uintptr_t key)
 	if (!n)
 		goto not_found;
 
-	uintptr_t del = util_fetch_and_add64(&c->remove_count, 1) % DELETED_LIFE;
+	word del = util_fetch_and_add64(&c->remove_count, 1) % DELETED_LIFE;
 	free_node(c, c->pending_del_nodes[del]);
 	free_leaf(c, c->pending_del_leaves[del]);
 	c->pending_del_nodes[del] = NULL;
@@ -529,7 +530,7 @@ not_found:
  * we need only one that was valid at any point after the call started.
  */
 void *
-critnib_get(struct critnib *c, uintptr_t key)
+critnib_get(struct critnib *c, word key)
 {
 	uint64_t wrs1, wrs2;
 	void *res;
@@ -582,7 +583,7 @@ find_successor(struct critnib_node *__restrict n)
  * internal: find_le -- recursively search <= in a subtree
  */
 static void *
-find_le(struct critnib_node *__restrict n, uintptr_t key)
+find_le(struct critnib_node *__restrict n, word key)
 {
 	if (!n)
 		return NULL;
@@ -651,7 +652,7 @@ find_le(struct critnib_node *__restrict n, uintptr_t key)
  * Same guarantees as critnib_get().
  */
 void *
-critnib_find_le(struct critnib *c, uintptr_t key)
+critnib_find_le(struct critnib *c, word key)
 {
 	uint64_t wrs1, wrs2;
 	void *res;

@@ -8,12 +8,14 @@
 
 #define ARRAYSZ(x) (sizeof(x)/sizeof(x[0]))
 
+typedef uintptr_t word;
+
 // These functions return a 64-bit value on 64-bit systems; I'd be
 // interested in testing stuff on a box where you have more cores
 // than fits in an uint32_t...
-static uintptr_t nthreads, nrthreads, nwthreads;
+static word nthreads, nrthreads, nwthreads;
 
-static uintptr_t nproc()
+static word nproc()
 {
     cpu_set_t set;
     if (!pthread_getaffinity_np(pthread_self(), sizeof(set), &set))
@@ -26,7 +28,7 @@ static int bad=0, any_bad=0;
 #define CHECKP(x,...) do if (!(x)) {bad=1; printf("ERROR: "__VA_ARGS__);} while (0)
 static int done=0;
 
-static uintptr_t the1000[1000];
+static word the1000[1000];
 static void* the1000p[1000];
 
 #if __SIZEOF_SIZE_T__ == 8
@@ -41,7 +43,7 @@ static void* the1000p[1000];
 
 static void* thread_read1(void* c)
 {
-    uintptr_t count=0;
+    word count=0;
     while (!done)
     {
         CHECK(hm_get(c, K) == (void*)K);
@@ -54,10 +56,10 @@ static void* thread_read1p(void* c)
 {
     void* k = the1000p[0];
 
-    uintptr_t count=0;
+    word count=0;
     while (!done)
     {
-        CHECK(hm_get(c, (uintptr_t)k) == k);
+        CHECK(hm_get(c, (word)k) == k);
         count++;
     }
     return (void*)count;
@@ -65,13 +67,13 @@ static void* thread_read1p(void* c)
 
 static void* thread_read1000(void* c)
 {
-    uintptr_t count=0;
+    word count=0;
     int i=0;
     while (!done)
     {
         if (++i==1000)
             i=0;
-        uintptr_t v=the1000[i];
+        word v=the1000[i];
         CHECK(hm_get(c, v) == (void*)v);
         count++;
     }
@@ -82,19 +84,19 @@ static void* thread_write1000(void* c)
 {
     rng_t rng;
     randomize_r(&rng, 0);
-    uintptr_t w1000[1000];
+    word w1000[1000];
     for (int i=0; i<ARRAYSZ(w1000); i++)
         w1000[i] = rnd64_r(&rng);
 
-    uintptr_t count=0;
+    word count=0;
     int i=0;
     while (!done)
     {
         if (++i==1000)
             i=0;
-        uintptr_t v=w1000[i];
+        word v=w1000[i];
         hm_insert(c, v, (void*)v, 0);
-        uintptr_t r=(uintptr_t)hm_remove(c, v);
+        word r=(word)hm_remove(c, v);
         CHECK(v==r);
         count++;
     }
@@ -105,14 +107,14 @@ static void* thread_read_write_remove(void* c)
 {
     rng_t rng;
     randomize_r(&rng, 0);
-    uintptr_t count=0;
+    word count=0;
     while (!done)
     {
-        uintptr_t r, v=rnd64_r(&rng);
+        word r, v=rnd64_r(&rng);
         hm_insert(c, v, (void*)v, 0);
-        r = (uintptr_t)hm_get(c, v);
+        r = (word)hm_get(c, v);
         CHECKP(r == v, "get[%016zx] got %016zx\n\n", v, r);
-        r = (uintptr_t)hm_remove(c, v);
+        r = (word)hm_remove(c, v);
         CHECKP(r == v, "remove[%016zx] got %016zx\n\n", v, r);
         count++;
     }
@@ -123,9 +125,9 @@ static void* thread_read_write_remove(void* c)
 
 static void* thread_read1_cachekiller(void* c)
 {
-    volatile uintptr_t cache[CACHESIZE][8];
+    volatile word cache[CACHESIZE][8];
 
-    uintptr_t count=0;
+    word count=0;
     while (!done)
     {
         for (int i=0; i<CACHESIZE; i++)
@@ -138,8 +140,8 @@ static void* thread_read1_cachekiller(void* c)
 
 static void* thread_read1000_cachekiller(void* c)
 {
-    volatile uintptr_t cache[CACHESIZE][8];
-    uintptr_t count=0;
+    volatile word cache[CACHESIZE][8];
+    word count=0;
     int i=0;
     while (!done)
     {
@@ -147,7 +149,7 @@ static void* thread_read1000_cachekiller(void* c)
             cache[k][0]++;
         if (++i==1000)
             i=0;
-        uintptr_t v=the1000[i];
+        word v=the1000[i];
         CHECK(hm_get(c, v) == (void*)v);
         count++;
     }
@@ -156,14 +158,14 @@ static void* thread_read1000_cachekiller(void* c)
 
 static void* thread_write1000_cachekiller(void* c)
 {
-    volatile uintptr_t cache[CACHESIZE][8];
+    volatile word cache[CACHESIZE][8];
     rng_t rng;
     randomize_r(&rng, 0);
-    uintptr_t w1000[1000];
+    word w1000[1000];
     for (int i=0; i<ARRAYSZ(w1000); i++)
         w1000[i] = rnd64_r(&rng);
 
-    uintptr_t count=0;
+    word count=0;
     int i=0;
     while (!done)
     {
@@ -171,18 +173,18 @@ static void* thread_write1000_cachekiller(void* c)
             cache[k][0]++;
         if (++i==1000)
             i=0;
-        uintptr_t v=w1000[i];
+        word v=w1000[i];
         hm_insert(c, v, (void*)v, 0);
-        uintptr_t r=(uintptr_t)hm_remove(c, v);
+        word r=(word)hm_remove(c, v);
         CHECK(v==r);
         count++;
     }
     return (void*)count;
 }
 
-static uintptr_t revbits(uintptr_t x)
+static word revbits(word x)
 {
-    uintptr_t y=0, a=1, b=1UL<<(sizeof(void*)*8-1);
+    word y=0, a=1, b=1UL<<(sizeof(void*)*8-1);
     for (; b; a<<=1, b>>=1)
     {
         if (x & a)
@@ -193,10 +195,10 @@ static uintptr_t revbits(uintptr_t x)
 
 static void* thread_le1(void* c)
 {
-    uintptr_t count=0;
+    word count=0;
     while (!done)
     {
-        uintptr_t y = revbits(count);
+        word y = revbits(count);
         if (y < K)
             CHECK(hm_find_le(c, y) == NULL);
         else
@@ -208,10 +210,10 @@ static void* thread_le1(void* c)
 
 static void* thread_le1000(void* c)
 {
-    uintptr_t count=0;
+    word count=0;
     while (!done)
     {
-        uintptr_t y = revbits(count);
+        word y = revbits(count);
         hm_find_le(c, y);
         count++;
     }
@@ -237,7 +239,7 @@ static void run_test(int spreload, int rpreload, thread_func_t rthread, thread_f
     {
         rpreload=-rpreload;
         for (int i=spreload; i<rpreload; i++)
-            hm_insert(c, (uintptr_t)the1000p[i], the1000p[i], 0);
+            hm_insert(c, (word)the1000p[i], the1000p[i], 0);
     }
     else
         for (int i=spreload; i<rpreload; i++)
@@ -254,18 +256,18 @@ static void run_test(int spreload, int rpreload, thread_func_t rthread, thread_f
     sleep(1);
     done=1;
 
-    uintptr_t countr=0, countw=0;
+    word countr=0, countw=0;
     for (int i=0; i<ntr; i++)
     {
         void* retval;
         CHECK(!pthread_join(th[i], &retval));
-        countr+=(uintptr_t)retval;
+        countr+=(word)retval;
     }
     for (int i=0; i<ntw; i++)
     {
         void* retval;
         CHECK(!pthread_join(wr[i], &retval));
-        countw+=(uintptr_t)retval;
+        countw+=(word)retval;
     }
 
     if (ntw)

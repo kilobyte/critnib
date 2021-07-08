@@ -5,6 +5,8 @@
 
 #define ARRAYSZ(x) (sizeof(x)/sizeof(x[0]))
 
+typedef uintptr_t word;
+
 static int bad=0;
 #define CHECK(x) do if (!(x)) printf("\e[31mWRONG: \e[1m%s\e[22m at line \e[1m%d\e[22m\n", #x, __LINE__),bad=1,exit(1); while (0)
 
@@ -80,7 +82,7 @@ static void test_insert_bulk_delete1M()
 
 static void test_ffffffff_and_friends()
 {
-    static uintptr_t vals[]=
+    static word vals[]=
     {
         0,
         0x7fffffff,
@@ -108,7 +110,7 @@ static void test_insert_delete_random()
     void *c = hm_new();
     for (long i=0; i<1000000; i++)
     {
-        uintptr_t v=rnd64();
+        word v=rnd64();
         hm_insert(c, v, (void*)v, 0);
         CHECK(hm_get(c, v) == (void*)v);
         CHECK(hm_remove(c, v) == (void*)v);
@@ -152,7 +154,7 @@ static void test_le_basic()
     hm_delete(c);
 }
 
-static uintptr_t expand_bits(uintptr_t x)
+static word expand_bits(word x)
 {
     return (x&0xc000)<<14
          | (x&0x3000)<<12
@@ -183,8 +185,8 @@ static void test_le_brute()
             int v;
             for (v=w; v>=0 && !ws[v]; v--)
                 ;
-            uintptr_t res = (uintptr_t)hm_find_le(c, expand_bits(w));
-            uintptr_t exp = (v>=0)?expand_bits(v):0;
+            word res = (word)hm_find_le(c, expand_bits(w));
+            word exp = (v>=0)?expand_bits(v):0;
             CHECK(res == exp);
         }
     }
