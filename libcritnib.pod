@@ -25,22 +25,22 @@ Creates a new empty critnib structure.
 Destroys and frees the memory.  Note that removed items are reused but won't
 have their memory freed until this function is called.
 
-=item B<int critnib_insert(critnib *>I<c>B<, uint64_t >I<key>B<, void *>I<value>B<, int >I<update>B<);>
+=item B<int critnib_insert(critnib *>I<c>B<, uintptr_t >I<key>B<, void *>I<value>B<, int >I<update>B<);>
 
 Adds a key:value pair to the critnib structure.  If I<update> is non-zero,
 an already existing key has its value updated, otherwise the function returns
 B<EEXISTS>.  It may return B<ENOMEM> if we're out of memory, or 0 if all went
 okay.
 
-=item B<void *critnib_remove(critnib *>I<c>B<, uint64_t >I<key>B<);>
+=item B<void *critnib_remove(critnib *>I<c>B<, uintptr_t >I<key>B<);>
 
 Removes a given key and its associated value from the structure.
 
-=item B<void *critnib_get(critnib *>I<c>B<, uint64_t >I<key>B<);>
+=item B<void *critnib_get(critnib *>I<c>B<, uintptr_t >I<key>B<);>
 
 Obtains a value for a given key, or 0 (NULL) if not present.
 
-=item B<void *critnib_find_le(critnib *>I<c>B<, uint64_t >I<key>B<);>
+=item B<void *critnib_find_le(critnib *>I<c>B<, uintptr_t >I<key>B<);>
 
 Searches for the largest key not exceeding the argument, and returns its value.
 
