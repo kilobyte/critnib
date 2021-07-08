@@ -34,7 +34,8 @@ okay.
 
 =item B<void *critnib_remove(critnib *>I<c>B<, uintptr_t >I<key>B<);>
 
-Removes a given key and its associated value from the structure.
+Removes a given key from the structure.  Its associated value is returned,
+or 0 (NULL) if there was no such key.
 
 =item B<void *critnib_get(critnib *>I<c>B<, uintptr_t >I<key>B<);>
 
