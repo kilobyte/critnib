@@ -16,7 +16,7 @@ add_executable(m main.c)
 target_link_libraries(m ${libs})
 
 set_target_properties(critnib PROPERTIES
-	SOVERSION 0
+	SOVERSION 1
 	PUBLIC_HEADER "critnib.h")
 
 include(GNUInstallDirs)
