@@ -175,7 +175,7 @@ static void test_le_brute()
 
     for (int cnt=0; cnt<1024; cnt++)
     {
-        int w = mrand48()&0xffff;
+        int w = rnd64()&0xffff;
         if (ws[w])
             hm_remove(c, expand_bits(w)), ws[w]=0;
         else
@@ -183,7 +183,7 @@ static void test_le_brute()
 
         for (int cnt2=0; cnt2<1024; cnt2++)
         {
-            w = mrand48()&0xffff;
+            w = rnd64()&0xffff;
             int v;
             for (v=w; v>=0 && !ws[v]; v--)
                 ;
