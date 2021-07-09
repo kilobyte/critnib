@@ -51,12 +51,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-//#include "alloc.h"
 #include "critnib.h"
 #include "pmdk-compat.h"
-//#include "out.h"
-//#include "sys_util.h"
-//#include "valgrind_internal.h"
 
 /*
  * A node that has been deleted is left untouched for this many delete
