@@ -1,6 +1,7 @@
 *~
 *.o
 *.so
+*.so.*
 *.3
 m
 CMakeCache.txt
