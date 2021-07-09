@@ -133,10 +133,9 @@ load(void *src, void *dst)
 }
 
 static void
-load64(void *src, void *dst)
+load64(uint64_t *src, uint64_t *dst)
 {
-	util_atomic_load_explicit64((uint64_t *)src, (uint64_t *)dst,
-		memory_order_acquire);
+	__atomic_load(src, dst, memory_order_acquire);
 }
 
 /*
