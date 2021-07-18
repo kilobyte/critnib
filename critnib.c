@@ -554,9 +554,9 @@ critnib_get(struct critnib *c, word key)
 }
 
 /*
- * internal: find_predecessor -- return the rightmost non-null node in a subtree
+ * internal: find_predecessor -- return the rightmost leaf in a subtree
  */
-static void *
+static struct critnib_leaf *
 find_predecessor(struct critnib_node *__restrict n)
 {
 	while (1) {
@@ -570,23 +570,23 @@ find_predecessor(struct critnib_node *__restrict n)
 
 		n = n->child[nib];
 		if (is_leaf(n))
-			return to_leaf(n)->value;
+			return to_leaf(n);
 	}
 }
 
 /*
  * internal: find_le -- recursively search <= in a subtree
  */
-static void *
+static struct critnib_leaf *
 find_le(struct critnib_node *__restrict n, word key)
 {
 	if (!n)
 		return NULL;
 
-	if (is_leaf(n)) {
+	if (is_leaf(n))
+	{
 		struct critnib_leaf *k = to_leaf(n);
-
-		return (k->key <= key) ? k->value : NULL;
+		return (k->key <= key) ? k : NULL;
 	}
 
 	/*
@@ -616,9 +616,9 @@ find_le(struct critnib_node *__restrict n, word key)
 	{
 		struct critnib_node *m;
 		load(&n->child[nib], &m);
-		void *value = find_le(m, key);
-		if (value)
-			return value;
+		struct critnib_leaf *k = find_le(m, key);
+		if (k)
+			return k;
 	}
 
 	/*
@@ -632,7 +632,7 @@ find_le(struct critnib_node *__restrict n, word key)
 		if (m) {
 			n = m;
 			if (is_leaf(n))
-				return to_leaf(n)->value;
+				return to_leaf(n);
 
 			return find_predecessor(n);
 		}
@@ -656,7 +656,8 @@ critnib_find_le(struct critnib *c, word key)
 		load64(&c->remove_count, &wrs1);
 		struct critnib_node *n; /* avoid a subtle TOCTOU */
 		load(&c->root, &n);
-		res = n ? find_le(n, key) : NULL;
+		struct critnib_leaf *k = n ? find_le(n, key) : NULL;
+		res = k ? k->value : NULL;
 		load64(&c->remove_count, &wrs2);
 	} while (wrs1 + DELETED_LIFE <= wrs2);
 
