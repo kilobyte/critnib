@@ -554,10 +554,10 @@ critnib_get(struct critnib *c, word key)
 }
 
 /*
- * internal: find_successor -- return the rightmost non-null node in a subtree
+ * internal: find_predecessor -- return the rightmost non-null node in a subtree
  */
 static void *
-find_successor(struct critnib_node *__restrict n)
+find_predecessor(struct critnib_node *__restrict n)
 {
 	while (1) {
 		int nib;
@@ -602,7 +602,7 @@ find_le(struct critnib_node *__restrict n, word key)
 		 * -> its rightmost value is good
 		 */
 		if (n->path < key)
-			return find_successor(n);
+			return find_predecessor(n);
 
 		/*
 		 * subtree is too far to the right?
@@ -634,7 +634,7 @@ find_le(struct critnib_node *__restrict n, word key)
 			if (is_leaf(n))
 				return to_leaf(n)->value;
 
-			return find_successor(n);
+			return find_predecessor(n);
 		}
 	}
 
