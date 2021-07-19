@@ -121,82 +121,6 @@ static void test_insert_delete_random()
     hm_delete(c);
 }
 
-static void test_le_basic()
-{
-    void *c = hm_new();
-#define INS(x) hm_insert(c, (x), (void*)(x), 0)
-    INS(1);
-    INS(2);
-    INS(3);
-    INS(0);
-    INS(4);
-    INS(0xf);
-    INS(0xe);
-    INS(0x11);
-    INS(0x12);
-    INS(0x20);
-#define GET_SAME(x) CHECK(hm_get(c, (x)), (void*)(x))
-#define GET_NULL(x) CHECK(hm_get(c, (x)), NULL)
-    GET_NULL(122);
-    GET_SAME(1);
-    GET_SAME(2);
-    GET_SAME(3);
-    GET_SAME(4);
-    GET_NULL(5);
-    GET_SAME(0x11);
-    GET_SAME(0x12);
-#define LE(x,y) CHECK(hm_find_le(c, (x)), (void*)(y))
-    LE(1, 1);
-    LE(2, 2);
-    LE(5, 4);
-    LE(6, 4);
-    LE(0x11, 0x11);
-    LE(0x15, 0x12);
-    LE(0xfffffff, 0x20);
-    hm_delete(c);
-}
-
-static word expand_bits(word x)
-{
-    return (x&0xc000)<<14
-         | (x&0x3000)<<12
-         | (x&0x0c00)<<10
-         | (x&0x0300)<< 8
-         | (x&0x00c0)<< 6
-         | (x&0x0030)<< 4
-         | (x&0x000c)<< 2
-         | (x&0x0003);
-}
-
-static void test_le_brute()
-{
-    void *c = hm_new();
-    char ws[65536]={0,};
-
-    for (int cnt=0; cnt<1024; cnt++)
-    {
-        int w = rnd64()&0xffff;
-        if (ws[w])
-            hm_remove(c, expand_bits(w)), ws[w]=0;
-        else
-            hm_insert(c, expand_bits(w), (void*)expand_bits(w), 0), ws[w]=1;
-
-        for (int cnt2=0; cnt2<1024; cnt2++)
-        {
-            w = rnd64()&0xffff;
-            int v;
-            for (v=w; v>=0 && !ws[v]; v--)
-                ;
-            word res = (word)hm_find_le(c, expand_bits(w));
-            word exp = (v>=0)?expand_bits(v):0;
-            CHECK(res, exp);
-        }
-    }
-
-    hm_delete(c);
-
-}
-
 static void test_same_only()
 {
     void *c = hm_new();
@@ -249,8 +173,6 @@ int main()
     TEST(insert_bulk_delete1M, 0);
     TEST(ffffffff_and_friends, 0);
     TEST(insert_delete_random, 0);
-    TEST(le_basic, 2);
-    TEST(le_brute, 2);
     TEST(same_only, 2);
     TEST(same_two, 2);
     return 0;
