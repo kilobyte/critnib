@@ -21,14 +21,14 @@ enum find_dir_t {
 	FIND_G  = +2,
 };
 
-struct critnib *critnib_new(void);
-void critnib_delete(struct critnib *c);
+critnib *critnib_new(void);
+void critnib_delete(critnib *c);
 
-int critnib_insert(struct critnib *c, uintptr_t key, void *value, int update);
-void *critnib_remove(struct critnib *c, uintptr_t key);
-void *critnib_get(struct critnib *c, uintptr_t key);
-void *critnib_find_le(struct critnib *c, uintptr_t key);
-int critnib_find(struct critnib *c, uintptr_t key, enum find_dir_t dir,
+int critnib_insert(critnib *c, uintptr_t key, void *value, int update);
+void *critnib_remove(critnib *c, uintptr_t key);
+void *critnib_get(critnib *c, uintptr_t key);
+void *critnib_find_le(critnib *c, uintptr_t key);
+int critnib_find(critnib *c, uintptr_t key, enum find_dir_t dir,
 	uintptr_t *rkey, void **rvalue);
 
 #ifdef __cplusplus
