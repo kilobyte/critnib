@@ -91,7 +91,39 @@ static void test_le_brute()
     }
 
     hm_delete(c);
+}
 
+static void test_ge_brute()
+{
+    void *c = hm_new();
+    char ws[65536]={0,};
+
+    for (int cnt=0; cnt<1024; cnt++)
+    {
+        int w = rnd64()&0xffff;
+        if (ws[w])
+            hm_remove(c, expand_bits(w)), ws[w]=0;
+        else
+            hm_insert(c, expand_bits(w), (void*)expand_bits(w), 0), ws[w]=1;
+
+        for (int cnt2=0; cnt2<1024; cnt2++)
+        {
+            w = rnd64()&0xffff;
+            int v;
+            for (v=w; v<0x10000 && !ws[v]; v++)
+                ;
+            word res;
+            word exp = (v<0x10000)?expand_bits(v):0;
+            void *W;
+            if (hm_find(c, expand_bits(w), FIND_GE, 0, &W))
+                res = (intptr_t)W;
+            else
+                res = 0;
+            CHECK(res, exp);
+        }
+    }
+
+    hm_delete(c);
 }
 
 static void run_test(void (*func)(void), const char *name, int req)
@@ -119,5 +151,6 @@ int main()
     randomize(-1);
     TEST(le_basic, 2);
     TEST(le_brute, 2);
+    TEST(ge_brute, 2);
     return 0;
 }
