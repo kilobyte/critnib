@@ -18,6 +18,7 @@ void hm_select(int i)
     hm_remove	= hms[i].hm_remove;
     hm_get	= hms[i].hm_get;
     hm_find_le	= hms[i].hm_find_le;
+    hm_find	= hms[i].hm_find;
     hm_name	= hms[i].hm_name;
     hm_immutable= hms[i].hm_immutable;
 }

@@ -81,6 +81,12 @@ static void test_le_brute()
             word res = (word)hm_find_le(c, expand_bits(w));
             word exp = (v>=0)?expand_bits(v):0;
             CHECK(res, exp);
+            void *W;
+            if (hm_find(c, expand_bits(w), FIND_LE, 0, &W))
+                res = (intptr_t)W;
+            else
+                res = 0;
+            CHECK(res, exp);
         }
     }
 
