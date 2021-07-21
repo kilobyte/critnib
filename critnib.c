@@ -663,3 +663,127 @@ critnib_find_le(struct critnib *c, word key)
 
 	return res;
 }
+
+/*
+ * internal: find_successor -- return the rightmost leaf in a subtree
+ */
+static struct critnib_leaf *
+find_successor(struct critnib_node *__restrict n)
+{
+	while (1) {
+		int nib;
+		for (nib = 0; nib <= NIB; nib++)
+			if (n->child[nib])
+				break;
+
+		if (nib > NIB)
+			return NULL;
+
+		n = n->child[nib];
+		if (is_leaf(n))
+			return to_leaf(n);
+	}
+}
+
+/*
+ * internal: find_ge -- recursively search >= in a subtree
+ */
+static struct critnib_leaf *
+find_ge(struct critnib_node *__restrict n, word key)
+{
+	if (!n)
+		return NULL;
+
+	if (is_leaf(n))
+	{
+		struct critnib_leaf *k = to_leaf(n);
+		return (k->key >= key) ? k : NULL;
+	}
+
+	if ((key ^ n->path) >> (n->shift) & ~NIB) {
+		if (n->path > key)
+			return find_successor(n);
+
+		return NULL;
+	}
+
+	unsigned nib = slice_index(key, n->shift);
+	{
+		struct critnib_node *m;
+		load(&n->child[nib], &m);
+		struct critnib_leaf *k = find_ge(m, key);
+		if (k)
+			return k;
+	}
+
+	for (; nib < NIB; nib++) {
+		struct critnib_node *m;
+		load(&n->child[nib + 1], &m);
+		if (m) {
+			n = m;
+			if (is_leaf(n))
+				return to_leaf(n);
+
+			return find_successor(n);
+		}
+	}
+
+	return NULL;
+}
+
+/*
+ * critnib_find -- parametrized query, returns 1 if found
+ */
+int
+critnib_find(struct critnib *c, uintptr_t key, enum find_dir_t dir,
+	uintptr_t *rkey, void **rvalue)
+{
+	uint64_t wrs1, wrs2;
+	struct critnib_leaf *k;
+	uintptr_t _rkey;
+	void **_rvalue;
+
+	/* <42 ≡ ≤41 */
+	if (dir < -1) {
+		if (!key)
+			return 0;
+		key--;
+	} else if (dir > +1) {
+		if (key == -1)
+			return 0;
+		key++;
+	}
+
+	do {
+		load64(&c->remove_count, &wrs1);
+		struct critnib_node *n;
+		load(&c->root, &n);
+
+		if (dir < 0)
+			k = find_le(n, key);
+		else if (dir > 0)
+			k = find_ge(n, key);
+		else {
+			while (n && !is_leaf(n))
+				load(&n->child[slice_index(key, n->shift)], &n);
+
+			struct critnib_leaf *kk = to_leaf(n);
+			k = (n && kk->key == key) ? kk : NULL;
+		}
+		if (k) {
+			_rkey = k->key;
+			_rvalue = k->value;
+		}
+		load64(&c->remove_count, &wrs2);
+	} while (wrs1 + DELETED_LIFE <= wrs2);
+
+	if (k) {
+		if (rkey)
+			*rkey = _rkey;
+		if (rvalue)
+		*rvalue = _rvalue;
+		return 1;
+	}
+
+	return 0;
+}

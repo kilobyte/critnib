@@ -45,4 +45,11 @@ Obtains a value for a given key, or 0 (NULL) if not present.
 
 Searches for the largest key not exceeding the argument, and returns its value.
 
+=item B<int critnib_find(struct critnib *>I<c>B<, uintptr_t >I<key>B<, enum find_dir_t >I<dir>B<, uintptr_t *>I<rkey>B<, void **>I<rvalue>B<);>
+
+Searches for a key that's smaller (B<FIND_L>), smaller-or-equal (B<FIND_LE>),
+equal (B<FIND_EQ>), greater-or-equal (B<FIND_GE>), or greater (B<FIND_G>) than
+the argument.  If found, the key and value are assigned to I<*rkey> and I<*rvalue>
+(which may be null to skip assignment), and 1 is returned.
+
 =back
