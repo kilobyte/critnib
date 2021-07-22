@@ -25,6 +25,10 @@ install(TARGETS critnib
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}/)
 install(FILES critnib.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES
+	libcritnib.3
+	critnib.3
+	DESTINATION share/man/man3)
 
 enable_testing()
 add_subdirectory(tests)
