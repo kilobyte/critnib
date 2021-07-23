@@ -1,0 +1,11 @@
+os: linux
+arch:
+  - arm64
+  - ppc64le
+  - s390x
+addons:
+  apt:
+    packages:
+    - cmake
+
+script: cmake . && make && ctest --output-on-failure
