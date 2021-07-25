@@ -1,11 +1,16 @@
+language: c
 os: linux
-arch:
-  - arm64
-  - ppc64le
-  - s390x
+dist: focal
+jobs:
+  include:
+  - arch: arm64
+    before_install: sudo dpkg --add-architecture armhf && sudo apt-get update && sudo apt-get install gcc-arm-linux-gnueabihf libc6:armhf
+    script: cmake -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc . && make && ctest --output-on-failure
+  - arch: ppc64le
+    script: cmake . && make && ctest --output-on-failure
+  - arch: s390x
+    script: cmake . && make && ctest --output-on-failure
 addons:
   apt:
     packages:
     - cmake
-
-script: cmake . && make && ctest --output-on-failure
