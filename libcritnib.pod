@@ -29,7 +29,7 @@ have their memory freed until this function is called.
 
 Adds a key:value pair to the critnib structure.  If I<update> is non-zero,
 an already existing key has its value updated, otherwise the function returns
-B<EEXISTS>.  It may return B<ENOMEM> if we're out of memory, or 0 if all went
+B<EEXIST>.  It may return B<ENOMEM> if we're out of memory, or 0 if all went
 okay.
 
 =item B<void *critnib_remove(critnib *>I<c>B<, uintptr_t >I<key>B<);>
