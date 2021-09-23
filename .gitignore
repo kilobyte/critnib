@@ -10,3 +10,7 @@ Testing
 CTestTestfile.cmake
 cmake_install.cmake
 Makefile
+
+/.pc
+/debian/files
+/debian/patches
