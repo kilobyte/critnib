@@ -95,6 +95,9 @@ randomize_r(rng_t *state, uint64_t seed)
 			BCRYPT_USE_SYSTEM_PREFERRED_RNG)) {
 			return;
 		}
+#else
+		if (!getentropy(state, sizeof(rng_t)))
+			return;
 #endif
 		seed = pthread_self();
 	}
