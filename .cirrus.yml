@@ -12,3 +12,16 @@ freebsd_13_task:
     - pw useradd cirrus -m
     - chown -R cirrus:cirrus .
     - sudo -u cirrus ctest --output-on-failure
+
+macos_x_task:
+  macos_instance:
+    image: big-sur-xcode
+  install_script:
+    - brew update
+    - brew install cmake
+  build_script:
+    - NPROC=$(getconf _NPROCESSORS_ONLN)
+    - cmake .
+    - make -j${NPROC}
+  test_script:
+    ctest --output-on-failure
