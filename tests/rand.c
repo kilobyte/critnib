@@ -19,6 +19,9 @@
 #else
 # include <sys/syscall.h>
 # include <pthread.h>
+# ifdef __APPLE__
+# include <sys/random.h>
+# endif
 #endif
 
 /*
