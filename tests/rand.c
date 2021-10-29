@@ -99,7 +99,8 @@ randomize_r(rng_t *state, uint64_t seed)
 		if (!getentropy(state, sizeof(rng_t)))
 			return;
 #endif
-		seed = pthread_self();
+		// best effort fallback
+		seed = (uint64_t)pthread_self();
 	}
 
 	uint64_t *s = (void *)state;
