@@ -1,0 +1,14 @@
+freebsd_13_task:
+  freebsd_instance:
+    image: freebsd-13-0-release-amd64
+  install_script:
+    pkg install -y cmake perl5
+  build_script:
+    - NPROC=$(getconf _NPROCESSORS_ONLN)
+    - cmake .
+    - make -j${NPROC}
+  test_script:
+      # run tests as user "cirrus" instead of root
+    - pw useradd cirrus -m
+    - chown -R cirrus:cirrus .
+    - sudo -u cirrus ctest --output-on-failure
