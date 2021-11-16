@@ -1,3 +1,10 @@
+critnib (1.0-2) unstable; urgency=medium
+
+  * Add -latomic to make armel/mipsel/m68k/powerpc/sh4 happy.
+  * Don't try to detect SMP on Hurd, there's none.
+
+ -- Adam Borowski <kilobyte@angband.pl>  Tue, 16 Nov 2021 02:42:54 +0100
+
 critnib (1.0-1) unstable; urgency=medium
 
   * Initial release (Closes: #994958)
