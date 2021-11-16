@@ -17,9 +17,11 @@ static word nthreads, nrthreads, nwthreads;
 
 static word nproc()
 {
+#ifndef __gnu_hurd__
     cpu_set_t set;
     if (!pthread_getaffinity_np(pthread_self(), sizeof(set), &set))
         return CPU_COUNT(&set);
+#endif
     return 0;
 }
 
