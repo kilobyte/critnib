@@ -11,7 +11,7 @@ endif (NOT CMAKE_BUILD_TYPE)
 set(CMAKE_C_FLAGS "-Wall -Werror=format-security ${CMAKE_C_FLAGS}")
 
 add_library(critnib SHARED critnib.c)
-set(libs critnib ${CMAKE_THREAD_LIBS_INIT})
+set(libs critnib ${CMAKE_THREAD_LIBS_INIT} -latomic)
 add_executable(m main.c)
 target_link_libraries(m ${libs})
 
