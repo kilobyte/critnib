@@ -27,14 +27,6 @@ static void *Zalloc(size_t s)
 #define util_atomic_load_explicit64	__atomic_load
 #define util_atomic_store_explicit32	__atomic_store_n
 #define util_atomic_store_explicit64	__atomic_store_n
-#define util_fetch_and_add32	__sync_fetch_and_add
-#define util_fetch_and_add64	__sync_fetch_and_add
-#define util_fetch_and_sub32	__sync_fetch_and_sub
-#define util_fetch_and_sub64	__sync_fetch_and_sub
-#define util_fetch_and_and32	__sync_fetch_and_and
-#define util_fetch_and_and64	__sync_fetch_and_and
-#define util_fetch_and_or32	__sync_fetch_and_or
-#define util_fetch_and_or64	__sync_fetch_and_or
 #define util_lssb_index64(x)	((unsigned char)__builtin_ctzll(x))
 #define util_mssb_index64(x)	((unsigned char)(63 - __builtin_clzll(x)))
 #define util_lssb_index32(x)	((unsigned char)__builtin_ctzl(x))

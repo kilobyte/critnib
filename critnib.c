@@ -450,7 +450,7 @@ critnib_remove(struct critnib *c, word key)
 	if (!n)
 		goto not_found;
 
-	word del = util_fetch_and_add64(&c->remove_count, 1) % DELETED_LIFE;
+	word del = __atomic_fetch_add(&c->remove_count, 1, __ATOMIC_ACQ_REL) % DELETED_LIFE;
 	free_node(c, c->pending_del_nodes[del]);
 	free_leaf(c, c->pending_del_leaves[del]);
 	c->pending_del_nodes[del] = NULL;
