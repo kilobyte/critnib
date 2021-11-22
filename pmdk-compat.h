@@ -23,10 +23,6 @@ static void *Zalloc(size_t s)
 #define util_mutex_destroy(x)	pthread_mutex_destroy(x)
 #define util_mutex_lock(x)	pthread_mutex_lock(x)
 #define util_mutex_unlock(x)	pthread_mutex_unlock(x)
-#define util_atomic_load_explicit32	__atomic_load
-#define util_atomic_load_explicit64	__atomic_load
-#define util_atomic_store_explicit32	__atomic_store_n
-#define util_atomic_store_explicit64	__atomic_store_n
 #define util_lssb_index64(x)	((unsigned char)__builtin_ctzll(x))
 #define util_mssb_index64(x)	((unsigned char)(63 - __builtin_clzll(x)))
 #define util_lssb_index32(x)	((unsigned char)__builtin_ctzl(x))
