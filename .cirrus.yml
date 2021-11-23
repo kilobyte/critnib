@@ -1,3 +1,29 @@
+ubuntu_amd64_task:
+  container:
+    image: ubuntu:focal
+  install_script:
+    - apt-get update
+    - DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
+    - DEBIAN_FRONTEND=noninteractive apt-get -y install cmake perl
+  build_script:
+    - cmake .
+    - make -j$(getconf _NPROCESSORS_ONLN)
+  test_script:
+    ctest --output-on-failure
+
+ubuntu_arm64_task:
+  arm_container:
+    image: ubuntu:focal
+  install_script:
+    - apt-get update
+    - DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
+    - DEBIAN_FRONTEND=noninteractive apt-get -y install cmake perl
+  build_script:
+    - cmake .
+    - make -j$(getconf _NPROCESSORS_ONLN)
+  test_script:
+    ctest --output-on-failure
+
 freebsd_13_task:
   freebsd_instance:
     image: freebsd-13-0-release-amd64
