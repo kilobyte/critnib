@@ -33,10 +33,9 @@ install(FILES
 enable_testing()
 add_subdirectory(tests)
 
-add_custom_target(man ALL
-	BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/libcritnib.3
-	COMMENT "Building libcritnib.3"
+add_custom_command(OUTPUT libcritnib.3
 	COMMAND pod2man -c critnib -s 3 -n libcritnib
 		<${CMAKE_CURRENT_SOURCE_DIR}/libcritnib.pod
-		>${CMAKE_CURRENT_BINARY_DIR}/libcritnib.3
-	)
+		>${CMAKE_CURRENT_BINARY_DIR}/libcritnib.3)
+add_custom_target(man ALL
+	DEPENDS libcritnib.3)
