@@ -34,6 +34,7 @@ enable_testing()
 add_subdirectory(tests)
 
 add_custom_command(OUTPUT libcritnib.3
+	DEPENDS libcritnib.pod
 	COMMAND pod2man -c critnib -s 3 -n libcritnib
 		<${CMAKE_CURRENT_SOURCE_DIR}/libcritnib.pod
 		>${CMAKE_CURRENT_BINARY_DIR}/libcritnib.3)
