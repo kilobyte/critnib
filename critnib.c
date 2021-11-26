@@ -787,3 +787,43 @@ critnib_find(struct critnib *c, uintptr_t key, enum find_dir_t dir,
 
 	return 0;
 }
+
+/*
+ * critnib_iter -- iterator, [min..max], calls func(key, value, privdata)
+ *
+ * If func() returns non-zero, the search is aborted.
+ */
+static int
+iter(struct critnib_node *__restrict n, word min, word max,
+	int (*func)(word key, void *value, void *privdata), void *privdata)
+{
+	if (is_leaf(n)) {
+		word k = to_leaf(n)->key;
+		if (k >= min && k <= max)
+			return func(to_leaf(n)->key, to_leaf(n)->value, privdata);
+		return 0;
+	}
+
+	if (n->path > max)
+		return 1;
+	if ((n->path | path_mask(n->shift)) < min)
+		return 0;
+
+	for (int i = 0; i < SLNODES; i++) {
+		struct critnib_node *__restrict m = n->child[i];
+		if (m && iter(m, min, max, func, privdata))
+			return 1;
+	}
+
+	return 0;
+}
+
+void
+critnib_iter(critnib *c, uintptr_t min, uintptr_t max,
+	int (*func)(uintptr_t key, void *value, void *privdata), void *privdata)
+{
+	util_mutex_lock(&c->mutex);
+	if (c->root)
+		iter(c->root, min, max, func, privdata);
+	util_mutex_unlock(&c->mutex);
+}

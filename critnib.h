@@ -30,6 +30,8 @@ void *critnib_get(critnib *c, uintptr_t key);
 void *critnib_find_le(critnib *c, uintptr_t key);
 int critnib_find(critnib *c, uintptr_t key, enum find_dir_t dir,
 	uintptr_t *rkey, void **rvalue);
+void critnib_iter(critnib *c, uintptr_t min, uintptr_t max,
+       int (*func)(uintptr_t key, void *value, void *privdata), void *privdata);
 
 #ifdef __cplusplus
 }
