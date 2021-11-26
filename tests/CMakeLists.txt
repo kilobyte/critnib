@@ -8,3 +8,7 @@ endfunction()
 test(1corr)
 test(inequal)
 test(th)
+
+add_executable(iter-cli iter-cli.c)
+target_link_libraries(iter-cli ${libs})
+add_test(iter ${CMAKE_CURRENT_SOURCE_DIR}/iter)
