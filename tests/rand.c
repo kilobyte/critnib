@@ -19,6 +19,9 @@
 #else
 # include <sys/syscall.h>
 # include <pthread.h>
+# ifdef __APPLE__
+# include <sys/random.h>
+# endif
 #endif
 
 /*
@@ -95,8 +98,12 @@ randomize_r(rng_t *state, uint64_t seed)
 			BCRYPT_USE_SYSTEM_PREFERRED_RNG)) {
 			return;
 		}
+#else
+		if (!getentropy(state, sizeof(rng_t)))
+			return;
 #endif
-		seed = pthread_self();
+		// best effort fallback
+		seed = (uint64_t)pthread_self();
 	}
 
 	uint64_t *s = (void *)state;

@@ -52,4 +52,18 @@ equal (B<FIND_EQ>), greater-or-equal (B<FIND_GE>), or greater (B<FIND_G>) than
 the argument.  If found, the key and value are assigned to I<*rkey> and I<*rvalue>
 (which may be null to skip assignment), and 1 is returned.
 
+=item B<void critnib_iter(critnib *>I<c>B<, uintptr_t >I<min>B<, uintptr_t >I<max>B<, >I<func>B<, void *>I<privdata>B<);>
+
+Walks the structure, visiting all entries whose keys are at least I<min> but
+no larger than I<max> (give B<-1> for no max), calling I<func> for every
+entry found.  If the I<func> returns a non-zero value, the walk is aborted.
+
+The prototype for I<func> should be:
+B<int (*>I<func>B<)(uintptr_t >I<key>B<, void *>I<value>B<, void *>I<privdata>B<);>
+where I<privdata> is an optional value passed to the iterator.
+
+B<NB. This version of the library implements the iterator in a crude
+blocking way, stalling any concurrent writers and iterators.  This
+limitation will be lifted in the future.>
+
 =back
