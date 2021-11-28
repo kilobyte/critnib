@@ -1,0 +1,8 @@
+Test-Command: cc -Wall -o "$AUTOPKGTEST_TMP"/⁊ debian/tests/basic.c -lcritnib && "$AUTOPKGTEST_TMP"/⁊
+Features: test-name=basic
+Depends: gcc, libc-dev, libcritnib-dev
+
+Test-Command: cc -Wall -o "$AUTOPKGTEST_TMP"/⁊ debian/tests/basic.c -lcritnib && valgrind --error-exitcode=1 -q "$AUTOPKGTEST_TMP"/⁊
+Features: test-name=basic-valgrind
+Depends: gcc, libc-dev, libcritnib-dev, valgrind
+Restrictions: skip-not-installable
