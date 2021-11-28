@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-ITER="$0-cli"
+ITER=./iter-cli
 
 "$ITER" 0 -1 >iter.out <<IN
 1
