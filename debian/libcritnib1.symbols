@@ -5,5 +5,6 @@ libcritnib.so.1 libcritnib1 #MINVER#
  critnib_find_le@Base 0
  critnib_get@Base 0
  critnib_insert@Base 0
+ critnib_iter@Base 1.1
  critnib_new@Base 0
  critnib_remove@Base 0
