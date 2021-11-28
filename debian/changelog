@@ -1,3 +1,11 @@
+critnib (1.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Add an autopkgtest.
+  * Update symbols.
+
+ -- Adam Borowski <kilobyte@angband.pl>  Sun, 28 Nov 2021 17:20:06 +0100
+
 critnib (1.0-2) unstable; urgency=medium
 
   * Add -latomic to make armel/mipsel/m68k/powerpc/sh4 happy.
