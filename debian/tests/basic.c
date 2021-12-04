@@ -4,9 +4,9 @@
 static int bad=0;
 
 #define PUT(x) if (critnib_insert(c, (x), (void*)(uintptr_t)(x), 0)) \
-    {fprintf(stderr, "insert(%lu) failed\n", (uintptr_t)(x));bad=1;}
+    {fprintf(stderr, "insert(%zu) failed\n", (uintptr_t)(x));bad=1;}
 #define CHECK(op,x,y) {uintptr_t z=(uintptr_t)critnib_##op(c,x); \
-    if ((y)!=z) {fprintf(stderr, "FAIL: %s(%lu) should be %lu is %lu\n", #op, (uintptr_t)(x), (uintptr_t)(y), z);bad=1;}}
+    if ((y)!=z) {fprintf(stderr, "FAIL: %s(%zu) should be %zu is %zu\n", #op, (uintptr_t)(x), (uintptr_t)(y), z);bad=1;}}
 
 int main()
 {
