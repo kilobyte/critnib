@@ -1,3 +1,9 @@
+critnib (1.1-2) unstable; urgency=medium
+
+  * Fix the autopkgtest on 32-bit.
+
+ -- Adam Borowski <kilobyte@angband.pl>  Sat, 04 Dec 2021 20:49:01 +0100
+
 critnib (1.1-1) unstable; urgency=medium
 
   * New upstream release.
