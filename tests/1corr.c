@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "rand.h"
@@ -143,6 +144,59 @@ static void test_same_two()
     hm_delete(c);
 }
 
+struct emplace_ctx
+{
+    void *new_value;
+    void *old_value;
+    int existed;
+};
+
+static void* emplace_constr(int exists, void *old_value, void *arg)
+{
+    struct emplace_ctx* ctx = (struct emplace_ctx*)arg;
+    ctx->old_value = old_value;
+    ctx->existed = exists;
+    return ctx->new_value;
+}
+
+static void test_emplace_basic()
+{
+    struct emplace_ctx ctx;
+    void *c = hm_new();
+
+    ctx.new_value = (void*)111;
+    hm_emplace(c, 122, emplace_constr, &ctx);
+    CHECK(ctx.old_value, NULL);
+    CHECK(ctx.existed, 0);
+
+    ctx.new_value = (void*)112;
+    hm_emplace(c, 122, emplace_constr, &ctx);
+    CHECK(ctx.old_value, (void*)111);
+    CHECK(ctx.existed, 1);
+
+    ctx.new_value = (void*)113;
+    hm_emplace(c, 122, emplace_constr, &ctx);
+    CHECK(ctx.old_value, (void*)112);
+    CHECK(ctx.existed, 1);
+
+    CHECK(hm_get(c, 122), (void*)113);
+
+    hm_delete(c);
+}
+
+static void test_insert_existed()
+{
+    void *c = hm_new();
+    int ret;
+    ret = hm_insert(c, 122, (void*)111, 0);
+    CHECK(ret, 0);
+    ret = hm_insert(c, 122, (void*)456, 0);
+    CHECK(ret, EEXIST);
+    ret = hm_insert(c, 122, (void*)456, 1);
+    CHECK(ret, EEXIST);
+    hm_delete(c);
+}
+
 static void run_test(void (*func)(void), const char *name, int req)
 {
     printf("TEST: %s\n", name);
@@ -175,5 +229,7 @@ int main()
     TEST(insert_delete_random, 0);
     TEST(same_only, 2);
     TEST(same_two, 2);
+    TEST(emplace_basic, 2);
+    TEST(insert_existed, 2);
     return 0;
 }

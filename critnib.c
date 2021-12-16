@@ -332,17 +332,16 @@ alloc_leaf(struct critnib *__restrict c)
 }
 
 /*
- * crinib_insert -- write a key:value pair to the critnib structure
+ * critnib_emplace -- write a key:value pair to the critnib structure
+ * Value is a result of constr(existed, old_data, arg).
  *
  * Returns:
  *  • 0 on success
- *  • EEXIST if such a key already exists
  *  • ENOMEM if we're out of memory
  *
  * Takes a global write lock but doesn't stall any readers.
  */
-int
-critnib_insert(struct critnib *c, word key, void *value, int update)
+int critnib_emplace(critnib *c, uintptr_t key, critnib_constr constr, void *arg)
 {
 	util_mutex_lock(&c->mutex);
 
@@ -356,13 +355,14 @@ critnib_insert(struct critnib *c, word key, void *value, int update)
 	VALGRIND_HG_DRD_DISABLE_CHECKING(k, sizeof(struct critnib_leaf));
 
 	k->key = key;
-	k->value = value;
+	k->value = NULL;
 
 	struct critnib_node *kn = (void *)((word)k | 1);
 
 	struct critnib_node *n = c->root;
 	if (!n) {
 		c->root = kn;
+		k->value = constr(0, NULL, arg);
 
 		util_mutex_unlock(&c->mutex);
 
@@ -381,6 +381,7 @@ critnib_insert(struct critnib *c, word key, void *value, int update)
 	if (!n) {
 		n = prev;
 		store(&n->child[slice_index(key, n->shift)], kn);
+		k->value = constr(0, NULL, arg);
 
 		util_mutex_unlock(&c->mutex);
 
@@ -394,14 +395,9 @@ critnib_insert(struct critnib *c, word key, void *value, int update)
 		ASSERT(is_leaf(n));
 		free_leaf(c, to_leaf(kn));
 
-		if (update) {
-			to_leaf(n)->value = value;
-			util_mutex_unlock(&c->mutex);
-			return 0;
-		} else {
-			util_mutex_unlock(&c->mutex);
-			return EEXIST;
-		}
+		to_leaf(n)->value = constr(1, to_leaf(n)->value, arg);
+		util_mutex_unlock(&c->mutex);
+		return 0;
 	}
 
 	/* and convert that to an index. */
@@ -430,9 +426,59 @@ critnib_insert(struct critnib *c, word key, void *value, int update)
 	m->path = key & path_mask(sh);
 	store(parent, m);
 
+	k->value = constr(0, NULL, arg);
 	util_mutex_unlock(&c->mutex);
 
 	return 0;
+}
+
+struct insert_constr_context
+{
+	/* input params */
+	int update;
+	void *value;
+
+	/* result */
+	int existed;
+};
+
+static void* insert_constr(int exists, void *old_data, void *arg)
+{
+	struct insert_constr_context* ctx = (struct insert_constr_context*)arg;
+	ctx->existed = exists;
+
+	if (!exists) {
+		return ctx->value;
+	} else if (exists && ctx->update) {
+		return ctx->value;
+	} else {
+		return old_data;
+	}
+}
+
+/*
+ * critnib_insert -- write a key:value pair to the critnib structure
+ *
+ * Returns:
+ *  • 0 on success
+ *  • EEXIST if such a key already exists
+ *  • ENOMEM if we're out of memory
+ *
+ * Takes a global write lock but doesn't stall any readers.
+ */
+int
+critnib_insert(struct critnib *c, word key, void *value, int update)
+{
+	struct insert_constr_context ctx;
+	ctx.update = update;
+	ctx.value = value;
+
+	int ret = critnib_emplace(c, key, insert_constr, &ctx);
+	if (ret) {
+		return ret;
+	}
+
+	return ctx.existed ? EEXIST : 0;
 }
 
 /*

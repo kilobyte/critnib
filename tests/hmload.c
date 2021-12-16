@@ -14,6 +14,7 @@ void hm_select(int i)
 {
     hm_new	= hms[i].hm_new;
     hm_delete	= hms[i].hm_delete;
+    hm_emplace  = hms[i].hm_emplace;
     hm_insert	= hms[i].hm_insert;
     hm_remove	= hms[i].hm_remove;
     hm_get	= hms[i].hm_get;
