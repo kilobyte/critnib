@@ -671,7 +671,7 @@ static struct critnib_leaf *
 find_successor(struct critnib_node *__restrict n)
 {
 	while (1) {
-		int nib;
+		unsigned nib;
 		for (nib = 0; nib <= NIB; nib++)
 			if (n->child[nib])
 				break;
@@ -749,7 +749,7 @@ critnib_find(struct critnib *c, uintptr_t key, enum find_dir_t dir,
 			return 0;
 		key--;
 	} else if (dir > +1) {
-		if (key == -1)
+		if (key == (uintptr_t)-1)
 			return 0;
 		key++;
 	}
