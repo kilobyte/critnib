@@ -746,11 +746,11 @@ critnib_find(struct critnib *c, uintptr_t key, enum find_dir_t dir,
 	/* <42 ≡ ≤41 */
 	if (dir < -1) {
 		if (!key)
-			return 0;
+			return 0;	/* no key is <0 */
 		key--;
 	} else if (dir > +1) {
 		if (key == (uintptr_t)-1)
-			return 0;
+			return 0;	/* no key is >(unsigned)∞ */
 		key++;
 	}
 
