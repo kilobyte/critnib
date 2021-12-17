@@ -151,12 +151,13 @@ struct emplace_ctx
     int existed;
 };
 
-static void* emplace_constr(int exists, void *old_value, void *arg)
+static int emplace_constr(int exists, void **value, void *arg)
 {
     struct emplace_ctx* ctx = (struct emplace_ctx*)arg;
-    ctx->old_value = old_value;
+    ctx->old_value = *value;
     ctx->existed = exists;
-    return ctx->new_value;
+    *value = ctx->new_value;
+    return 0;
 }
 
 static void test_emplace_basic()
@@ -180,6 +181,30 @@ static void test_emplace_basic()
     CHECK(ctx.existed, 1);
 
     CHECK(hm_get(c, 122), (void*)113);
+
+    hm_delete(c);
+}
+
+static int emplace_constr_abort(int exists, void **value, void *arg)
+{
+    return -1;
+}
+
+static void test_emplace_abort()
+{
+    struct emplace_ctx ctx;
+    void *c = hm_new();
+
+    hm_emplace(c, 122, emplace_constr_abort, NULL);
+    CHECK(hm_get(c, 122), NULL);
+
+    ctx.new_value = (void*)112;
+    hm_emplace(c, 122, emplace_constr, &ctx);
+    CHECK(ctx.old_value, (void*)NULL);
+    CHECK(ctx.existed, 0);
+
+    hm_emplace(c, 122, emplace_constr_abort, NULL);
+    CHECK(hm_get(c, 122), (void*)112);
 
     hm_delete(c);
 }
@@ -230,6 +255,7 @@ int main()
     TEST(same_only, 2);
     TEST(same_two, 2);
     TEST(emplace_basic, 2);
+    TEST(emplace_abort, 2);
     TEST(insert_existed, 2);
     return 0;
 }

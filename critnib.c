@@ -333,11 +333,12 @@ alloc_leaf(struct critnib *__restrict c)
 
 /*
  * critnib_emplace -- write a key:value pair to the critnib structure
- * Value is a result of constr(existed, old_data, arg).
+ * Value is obtained by calling constr(existed, &value, arg).
  *
  * Returns:
- *  • 0 on success
  *  • ENOMEM if we're out of memory
+ *  • result of constr(existed, data, arg) - if it is non-zero element was
+ *    not inserted
  *
  * Takes a global write lock but doesn't stall any readers.
  */
@@ -361,12 +362,16 @@ int critnib_emplace(critnib *c, uintptr_t key, critnib_constr constr, void *arg)
 
 	struct critnib_node *n = c->root;
 	if (!n) {
-		c->root = kn;
-		k->value = constr(0, NULL, arg);
+		int ret = constr(0, &k->value, arg);
+		if (ret) {
+			free_leaf(c, k);
+		} else {
+			c->root = kn;
+		}
 
 		util_mutex_unlock(&c->mutex);
 
-		return 0;
+		return ret;
 	}
 
 	struct critnib_node **parent = &c->root;
@@ -380,12 +385,17 @@ int critnib_emplace(critnib *c, uintptr_t key, critnib_constr constr, void *arg)
 
 	if (!n) {
 		n = prev;
-		store(&n->child[slice_index(key, n->shift)], kn);
-		k->value = constr(0, NULL, arg);
+
+		int ret = constr(0, &k->value, arg);
+		if (ret) {
+			free_leaf(c, k);
+		} else {
+			store(&n->child[slice_index(key, n->shift)], kn);
+		}
 
 		util_mutex_unlock(&c->mutex);
 
-		return 0;
+		return ret;
 	}
 
 	word path = is_leaf(n) ? to_leaf(n)->key : n->path;
@@ -395,9 +405,14 @@ int critnib_emplace(critnib *c, uintptr_t key, critnib_constr constr, void *arg)
 		ASSERT(is_leaf(n));
 		free_leaf(c, to_leaf(kn));
 
-		to_leaf(n)->value = constr(1, to_leaf(n)->value, arg);
+		void *value = to_leaf(n)->value;
+		int ret = constr(1, &value, arg);
+		if (!ret) {
+			to_leaf(n)->value = value;
+		}
+
 		util_mutex_unlock(&c->mutex);
-		return 0;
+		return ret;
 	}
 
 	/* and convert that to an index. */
@@ -417,19 +432,24 @@ int critnib_emplace(critnib *c, uintptr_t key, critnib_constr constr, void *arg)
 	}
 	VALGRIND_HG_DRD_DISABLE_CHECKING(m, sizeof(struct critnib_node));
 
-	for (int i = 0; i < SLNODES; i++)
-		m->child[i] = NULL;
+	int ret = constr(0, &k->value, arg);
+	if (ret) {
+		free_leaf(c, k);
+		free_node(c, m);
+	} else {
+		for (int i = 0; i < SLNODES; i++)
+			m->child[i] = NULL;
 
-	m->child[slice_index(key, sh)] = kn;
-	m->child[slice_index(path, sh)] = n;
-	m->shift = sh;
-	m->path = key & path_mask(sh);
-	store(parent, m);
+		m->child[slice_index(key, sh)] = kn;
+		m->child[slice_index(path, sh)] = n;
+		m->shift = sh;
+		m->path = key & path_mask(sh);
+		store(parent, m);
+	}
 
-	k->value = constr(0, NULL, arg);
 	util_mutex_unlock(&c->mutex);
 
-	return 0;
+	return ret;
 }
 
 struct insert_constr_context
@@ -442,18 +462,18 @@ struct insert_constr_context
 	int existed;
 };
 
-static void* insert_constr(int exists, void *old_data, void *arg)
+static int insert_constr(int exists, void **data, void *arg)
 {
 	struct insert_constr_context* ctx = (struct insert_constr_context*)arg;
 	ctx->existed = exists;
 
 	if (!exists) {
-		return ctx->value;
-	} else if (exists && ctx->update) {
-		return ctx->value;
-	} else {
-		return old_data;
+		*data = ctx->value;
+	} else if (ctx->update) {
+		*data = ctx->value;
 	}
+
+	return 0;
 }
 
 /*

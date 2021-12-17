@@ -21,7 +21,7 @@ enum find_dir_t {
 	FIND_G  = +2,
 };
 
-typedef void* critnib_constr(int exists, void *old_data, void *arg);
+typedef int critnib_constr(int exists, void **data, void *arg);
 
 critnib *critnib_new(void);
 void critnib_delete(critnib *c);

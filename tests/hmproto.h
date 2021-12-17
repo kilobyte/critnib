@@ -8,7 +8,7 @@ enum find_dir_t {
 	FIND_G  = +2,
 };
 
-typedef void* constr_f(int exists, void *old_data, void *arg);
+typedef int constr_f(int exists, void **data, void *arg);
 
 #define HM_PROTOS(x) \
     void *x##_new(void);\
