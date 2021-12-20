@@ -7,7 +7,7 @@
 
 static int itf(uintptr_t key, void *value, void *dummy)
 {
-	printf("%lu\n", key);
+	printf("%zu\n", key);
 	return (key == 42);
 }
 
@@ -22,10 +22,10 @@ int main(int argc, char **argv)
 
 	uintptr_t x;
 	int err;
-	while (scanf("%lu", &x) == 1)
+	while (scanf("%zu", &x) == 1)
 		if ((err = critnib_insert(c, x, (void*)x, 0))) {
 			if (err == EEXIST)
-				printf("dupe: %lu\n", x);
+				printf("dupe: %zu\n", x);
 			else
 				die("critnib_insert failed\n");
 		}
