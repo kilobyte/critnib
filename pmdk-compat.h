@@ -1,5 +1,4 @@
 #include <stdatomic.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
@@ -16,8 +15,6 @@ static void *Zalloc(size_t s)
 		memset(m, 0, s);
 	return m;
 }
-
-#define ERR(x) do fprintf(stderr, x); while(0)
 
 #define util_mutex_init(x)	pthread_mutex_init(x, NULL)
 #define util_mutex_destroy(x)	pthread_mutex_destroy(x)
