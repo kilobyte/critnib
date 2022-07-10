@@ -34,9 +34,18 @@ static void *Zalloc(size_t s)
 
 
 #define NOFUNCTION do ; while(0)
-
-// Make these an unthing for now...
-#define ASSERT(x) NOFUNCTION
-#define ASSERTne(x, y) ASSERT(x != y)
 #define VALGRIND_ANNOTATE_NEW_MEMORY(p, s) NOFUNCTION
 #define VALGRIND_HG_DRD_DISABLE_CHECKING(p, s) NOFUNCTION
+
+#ifdef NDEBUG
+# define ASSERT(x) NOFUNCTION
+# define ASSERTne(x, y) ASSERT(x != y)
+#else
+# include <stdio.h>
+# define ASSERT(x) do if(!(x)) \
+	{fprintf(stderr, "Assertion failed: " #x " at " __FILE__ " line %d.\n", __LINE__);abort();} while(0)
+# define ASSERTne(x, y) do { \
+	long X=(x);long Y=(y);if(X==Y) \
+	{fprintf(stderr, "Assertion failed: " #x " != " #y ", both are %ld, at " __FILE__ " line %d.\n", X, __LINE__);\
+	abort();}} while(0)
+#endif
