@@ -24,6 +24,13 @@ static void *Zalloc(size_t s)
 #define util_mssb_index64(x)	((unsigned char)(63 - __builtin_clzll(x)))
 #define util_lssb_index32(x)	((unsigned char)__builtin_ctzl(x))
 #define util_mssb_index32(x)	((unsigned char)(31 - __builtin_clzl(x)))
+#if __SIZEOF_LONG__ == 8
+# define util_lssb_index(x) util_lssb_index64(x)
+# define util_mssb_index(x) util_mssb_index64(x)
+#else
+# define util_lssb_index(x) util_lssb_index32(x)
+# define util_mssb_index(x) util_mssb_index32(x)
+#endif
 
 
 #define NOFUNCTION do ; while(0)

@@ -395,11 +395,7 @@ critnib_insert(struct critnib *c, word key, void *value, int update)
 	}
 
 	/* and convert that to an index. */
-#if __SIZEOF_SIZE_T__ == 8
-	sh_t sh = util_mssb_index64(at) & (sh_t)~(SLICE - 1);
-#else
-	sh_t sh = util_mssb_index32(at) & (sh_t)~(SLICE - 1);
-#endif
+	sh_t sh = util_mssb_index(at) & (sh_t)~(SLICE - 1);
 
 	struct critnib_node *m = alloc_node(c);
 	if (!m) {
