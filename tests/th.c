@@ -30,7 +30,8 @@ static word nproc()
 
 static int bad=0, any_bad=0;
 #define CHECK(x) do if (!(x)) bad=1; while (0)
-#define CHECKP(x,...) do if (!(x)) {bad=1; printf("ERROR: "__VA_ARGS__);} while (0)
+#define CHECKP(x,...) do if (!(x) && !bad) {bad=1; printf("ERROR: "__VA_ARGS__);} while (0)
+#define CHECKE(x, y) do {word X=(word)(x);uintptr_t Y=(word)(y);CHECKP(X==Y, "line %d got %zx wanted %zx\n\n", __LINE__, X, Y);} while (0)
 static int done=0;
 
 static word the1000[1000];
@@ -51,7 +52,7 @@ static void* thread_read1(void* c)
     word count=0;
     while (!done)
     {
-        CHECK(hm_get(c, K) == (void*)K);
+        CHECKE(hm_get(c, K), K);
         count++;
     }
     return (void*)count;
@@ -64,7 +65,7 @@ static void* thread_read1p(void* c)
     word count=0;
     while (!done)
     {
-        CHECK(hm_get(c, (word)k) == k);
+        CHECKE(hm_get(c, (word)k), k);
         count++;
     }
     return (void*)count;
@@ -79,7 +80,7 @@ static void* thread_read1000(void* c)
         if (++i==1000)
             i=0;
         word v=the1000[i];
-        CHECK(hm_get(c, v) == (void*)v);
+        CHECKE(hm_get(c, v), v);
         count++;
     }
     return (void*)count;
@@ -102,7 +103,7 @@ static void* thread_write1000(void* c)
         word v=w1000[i];
         hm_insert(c, v, (void*)v, 0);
         word r=(word)hm_remove(c, v);
-        CHECK(v==r);
+        CHECKE(r, v);
         count++;
     }
     return (void*)count;
@@ -118,9 +119,9 @@ static void* thread_read_write_remove(void* c)
         word r, v=rnd64_r(&rng);
         hm_insert(c, v, (void*)v, 0);
         r = (word)hm_get(c, v);
-        CHECKP(r == v, "get[%016zx] got %016zx\n\n", v, r);
+        CHECKE(r, v);
         r = (word)hm_remove(c, v);
-        CHECKP(r == v, "remove[%016zx] got %016zx\n\n", v, r);
+        CHECKE(r, v);
         count++;
     }
     return (void*)count;
@@ -137,7 +138,7 @@ static void* thread_read1_cachekiller(void* c)
     {
         for (int i=0; i<CACHESIZE; i++)
             cache[i][0]++;
-        CHECK(hm_get(c, K) == (void*)K);
+        CHECKE(hm_get(c, K), K);
         count++;
     }
     return (void*)count;
@@ -155,7 +156,7 @@ static void* thread_read1000_cachekiller(void* c)
         if (++i==1000)
             i=0;
         word v=the1000[i];
-        CHECK(hm_get(c, v) == (void*)v);
+        CHECKE(hm_get(c, v), v);
         count++;
     }
     return (void*)count;
@@ -181,7 +182,7 @@ static void* thread_write1000_cachekiller(void* c)
         word v=w1000[i];
         hm_insert(c, v, (void*)v, 0);
         word r=(word)hm_remove(c, v);
-        CHECK(v==r);
+        CHECKE(r, v);
         count++;
     }
     return (void*)count;
@@ -205,9 +206,9 @@ static void* thread_le1(void* c)
     {
         word y = revbits(count);
         if (y < K)
-            CHECK(hm_find_le(c, y) == NULL);
+            CHECKE(hm_find_le(c, y), NULL);
         else
-            CHECK(hm_find_le(c, y) == (void*)K);
+            CHECKE(hm_find_le(c, y), K);
         count++;
     }
     return (void*)count;
