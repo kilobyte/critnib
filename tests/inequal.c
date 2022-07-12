@@ -9,7 +9,7 @@ typedef uintptr_t word;
 
 static int bad=0;
 #define CHECK(x,y) do if ((x)!=(y)) \
-    printf("\e[31mWRONG: \e[1m%s\e[22m (\e[1m%zx\e[22m) ≠ \e[1m%s\e[22m (\e[1m%zx\e[22m) at line \e[1m%d\e[22m\n", \
+    printf("\e[31mWRONG: \e[1m%s\e[22m (\e[1m%zx\e[22m) ≠ \e[1m%s\e[22m (\e[1m%zx\e[22m) at line \e[1m%d\e[0m\n", \
     #x, (uintptr_t)(x), #y, (uintptr_t)(y), __LINE__),bad=1,exit(1); while (0)
 
 static void test_le_basic()
