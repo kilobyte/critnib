@@ -210,15 +210,15 @@ critnib_new(void)
 static void
 delete_node(struct critnib_node *__restrict n)
 {
-	if (!is_leaf(n)) {
+	if (is_leaf(n))
+		Free(to_leaf(n));
+	else {
 		for (int i = 0; i < SLNODES; i++) {
 			if (n->child[i])
 				delete_node(n->child[i]);
 		}
 
 		Free(n);
-	} else {
-		Free(to_leaf(n));
 	}
 }
 
