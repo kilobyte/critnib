@@ -1,6 +1,6 @@
 ubuntu_amd64_task:
   container:
-    image: ubuntu:focal
+    image: ubuntu:jammy
   install_script:
     - apt-get update
     - DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
@@ -13,7 +13,7 @@ ubuntu_amd64_task:
 
 ubuntu_i386_task:
   container:
-    image: ubuntu:focal
+    image: ubuntu:jammy
   install_script:
     - dpkg --add-architecture i386
     - apt-get update
@@ -27,7 +27,7 @@ ubuntu_i386_task:
 
 ubuntu_arm64_task:
   arm_container:
-    image: ubuntu:focal
+    image: ubuntu:jammy
   install_script:
     - apt-get update
     - DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
@@ -40,7 +40,7 @@ ubuntu_arm64_task:
 
 ubuntu_armhf_task:
   arm_container:
-    image: ubuntu:focal
+    image: ubuntu:jammy
   install_script:
     - dpkg --add-architecture armhf
     - apt-get update
@@ -69,7 +69,7 @@ freebsd_13_task:
 
 macos_x_task:
   macos_instance:
-    image: big-sur-xcode
+    image: ghcr.io/cirruslabs/macos-ventura-base:latest
   install_script:
     - brew update
     - brew install cmake
