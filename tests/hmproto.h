@@ -8,10 +8,13 @@ enum find_dir_t {
 	FIND_G  = +2,
 };
 
+typedef int constr_f(int exists, void **data, void *arg);
+
 #define HM_PROTOS(x) \
     void *x##_new(void);\
     void x##_delete(void *c);\
     \
+    int x##_emplace(void *c, uintptr_t key, constr_f constr, void *arg);\
     int x##_insert(void *c, uintptr_t key, void *value, int update);\
     void *x##_remove(void *c, uintptr_t key);\
     void *x##_get(void *c, uintptr_t key);\
@@ -25,6 +28,7 @@ HM_PROTOS(critnib)
 
 void *(*hm_new)(void);
 void (*hm_delete)(void *c);
+int (*hm_emplace)(void *c, uintptr_t key, constr_f constr, void *arg);
 int (*hm_insert)(void *c, uintptr_t key, void *value, int update);
 void *(*hm_remove)(void *c, uintptr_t key);
 void *(*hm_get)(void *c, uintptr_t key);
@@ -37,6 +41,7 @@ int hm_immutable;
 #define HM_SELECT(x) \
     HM_SELECT_ONE(x,new);\
     HM_SELECT_ONE(x,delete);\
+    HM_SELECT_ONE(x,emplace);\
     HM_SELECT_ONE(x,insert);\
     HM_SELECT_ONE(x,remove);\
     HM_SELECT_ONE(x,get);\
@@ -44,12 +49,14 @@ int hm_immutable;
     HM_SELECT_ONE(x,find);\
     hm_name=#x
 
-#define HM_ARR(x,imm) { x##_new, x##_delete, x##_insert, x##_remove, x##_get, \
-                        x##_find_le, x##_find, #x, imm }
+#define HM_ARR(x,imm) { x##_new, x##_delete, x##_emplace, x##_insert, \
+                        x##_remove, x##_get, x##_find_le, x##_find, #x, \
+                        imm }
 struct hm
 {
     void *(*hm_new)(void);
     void (*hm_delete)(void *c);
+    int (*hm_emplace)(void *c, uintptr_t key, constr_f constr, void *arg);
     int (*hm_insert)(void *c, uintptr_t key, void *value, int update);
     void *(*hm_remove)(void *c, uintptr_t key);
     void *(*hm_get)(void *c, uintptr_t key);

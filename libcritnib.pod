@@ -27,6 +27,12 @@ have their memory freed until this function is called.
 
 =item B<int critnib_insert(critnib *>I<c>B<, uintptr_t >I<key>B<, void *>I<value>B<, int >I<update>B<);>
 
+Adds a key:value pair to the critnib structure. Value is obtained by calling constr(existed, &value, arg).
+It may return B<ENOMEM> if we're out of memory, or result of constr() otherwise. If return value is non-zero,
+the element was not added.
+
+=item B<int critnib_emplace(critnib *>I<c>B<, uintptr_t >I<key>B<, critnib_constr >I<constr>B<, void >I<*arg>B<);>
+
 Adds a key:value pair to the critnib structure.  If I<update> is non-zero,
 an already existing key has its value updated, otherwise the function returns
 B<EEXIST>.  It may return B<ENOMEM> if we're out of memory, or 0 if all went
