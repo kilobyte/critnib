@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12...3.27)
+cmake_minimum_required(VERSION 2.8.12...4.1)
 project(critnib C)
 
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
