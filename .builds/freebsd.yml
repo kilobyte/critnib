@@ -1,0 +1,14 @@
+image: freebsd/current
+packages:
+ - cmake
+tasks:
+ - configure:
+     cd critnib && cmake .
+ - build:
+     cd critnib && make -j$(getconf _NPROCESSORS_ONLN)
+ - test:
+     cd critnib && ctest -j$(getconf _NPROCESSORS_ONLN) --output-on-failure
+triggers:
+ - action: email
+   condition: failure
+   to: kilobyte@angband.pl
